@@ -430,13 +430,37 @@ export function ShareModal({
               </svg>
             </button>
 
-            {/* Guest mode notice */}
+            {/* Guest warning - prominent */}
             {isGuest && (
-              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-xs text-amber-800">
-                  <strong>Note:</strong> As a guest user, this is your only chance
-                  to access this document. Please download or share it now to keep
-                  a copy.
+              <div className="mt-4 p-4 bg-amber-50 border-2 border-amber-300 rounded-xl">
+                <div className="flex gap-3">
+                  <div className="shrink-0">
+                    <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-amber-800 text-sm">Important: One-Time Access</p>
+                    <p className="text-sm text-amber-700 mt-1">
+                      As a guest, this is your <strong>only chance</strong> to download or share this document. 
+                      Once you close this window, you&apos;ll need to pay again to access it.
+                    </p>
+                    <p className="text-xs text-amber-600 mt-2">
+                      Tip: Create a free account to keep all your documents accessible anytime.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Logged-in user info */}
+            {!isGuest && (
+              <div className="mt-4 p-3 bg-lagoon/5 border border-lagoon/20 rounded-xl">
+                <p className="text-xs text-lagoon text-center">
+                  You can re-download or re-share this document anytime from your{" "}
+                  <a href="/dashboard/documents" className="font-medium underline hover:no-underline">
+                    Document Library
+                  </a>
                 </p>
               </div>
             )}
