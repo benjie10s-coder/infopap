@@ -10,6 +10,7 @@ import { QuotationPreview } from "@/components/QuotationPreview";
 import { QuotationOptionsSidebar } from "@/components/QuotationOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
+import { SidebarToggleButton } from "@/components/LeftNavSidebar";
 import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 
 export function QuotationEditor() {
@@ -166,9 +167,12 @@ export function QuotationEditor() {
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-mist safe-top">
         <div className="max-w-[1400px] mx-auto px-3 sm:px-4">
           <div className="flex items-center justify-between h-12 sm:h-14">
-            <Link href="/" className="text-lg sm:text-xl font-display font-bold text-lagoon shrink-0">
-              Invopap
-            </Link>
+            <div className="flex items-center gap-1 shrink-0">
+              <SidebarToggleButton />
+              <Link href="/" className="text-lg sm:text-xl font-display font-bold text-lagoon">
+                Invopap
+              </Link>
+            </div>
 
             {/* Center: Preview / Edit toggle */}
             <div className="flex items-center bg-mist/60 rounded-lg p-0.5">

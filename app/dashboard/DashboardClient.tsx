@@ -2,16 +2,9 @@
 "use client";
 
 import { UserNav } from "@/components/UserNav";
+import { SidebarToggleButton } from "@/components/LeftNavSidebar";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import Link from "next/link";
-
-interface DashboardStats {
-  totalInvoices: number;
-  totalPaid: number;
-  totalDue: number;
-  totalAmount: number;
-  paidAmount: number;
-}
 
 interface DocRow {
   id: string;
@@ -28,7 +21,6 @@ interface DocRow {
 
 interface DashboardClientProps {
   user: { displayName: string; email: string; avatarUrl: string | null };
-  stats: DashboardStats;
   documents: DocRow[];
 }
 
@@ -43,51 +35,23 @@ const DOC_TYPE_BADGE: Record<string, string> = {
 
 export function DashboardClient({
   user,
-  stats,
   documents,
 }: DashboardClientProps) {
-  const dueAmount = stats.totalAmount - stats.paidAmount;
-
   return (
     <div className="min-h-screen bg-mist/30">
       {/* Top bar */}
       <header className="bg-white border-b border-mist">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3">
-          <Link
-            href="/"
-            className="text-xl font-display font-bold text-lagoon"
-          >
-            Invopap
-          </Link>
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2">
-              <Link
-                href="/"
-                className="rounded-lg bg-ember px-4 py-2 text-sm font-medium text-white hover:bg-ember/90 transition-colors"
-              >
-                + Invoice
-              </Link>
-              <Link
-                href="/quotation"
-                className="rounded-lg border border-lagoon px-3 py-2 text-sm font-medium text-lagoon hover:bg-lagoon/5 transition-colors"
-              >
-                + Quotation
-              </Link>
-              <Link
-                href="/cash-sale"
-                className="rounded-lg border border-mist px-3 py-2 text-sm text-ink/60 hover:bg-mist/50 transition-colors"
-              >
-                + Cash Sale
-              </Link>
-              <Link
-                href="/receipt"
-                className="rounded-lg border border-mist px-3 py-2 text-sm text-ink/60 hover:bg-mist/50 transition-colors"
-              >
-                + Receipt
-              </Link>
-            </div>
-            <UserNav user={user} />
+          <div className="flex items-center gap-2">
+            <SidebarToggleButton />
+            <Link
+              href="/"
+              className="text-xl font-display font-bold text-lagoon"
+            >
+              Invopap
+            </Link>
           </div>
+          <UserNav user={user} />
         </div>
       </header>
 
@@ -98,39 +62,9 @@ export function DashboardClient({
             Hello, {user.displayName.split(" ")[0]}
           </h1>
           <p className="text-sm text-ink/50 mt-1">
-            Here&apos;s your business overview
+            Your documents
           </p>
         </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatCard label="Total Documents" value={String(stats.totalInvoices)} />
-          <StatCard label="Paid" value={String(stats.totalPaid)} accent="text-green-600" />
-          <StatCard label="Unpaid" value={String(stats.totalDue)} accent="text-amber-600" />
-          <StatCard
-            label="Revenue"
-            value={formatCurrency(stats.paidAmount, "KES")}
-            accent="text-lagoon"
-          />
-        </div>
-
-        {/* Outstanding */}
-        {dueAmount > 0 && (
-          <div className="rounded-xl bg-amber-50 border border-amber-200 px-6 py-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-amber-800">
-                Outstanding Amount
-              </p>
-              <p className="text-xs text-amber-600">
-                {stats.totalDue} document{stats.totalDue !== 1 ? "s" : ""}{" "}
-                pending download
-              </p>
-            </div>
-            <p className="text-lg font-bold text-amber-700">
-              {formatCurrency(dueAmount, "KES")}
-            </p>
-          </div>
-        )}
 
         {/* Recent Documents */}
         <div className="bg-white rounded-xl border border-mist">
@@ -240,25 +174,6 @@ export function DashboardClient({
           </Link>
         </footer>
       </div>
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: string;
-}) {
-  return (
-    <div className="bg-white rounded-xl border border-mist p-5">
-      <p className="text-xs text-ink/40 uppercase tracking-wider">{label}</p>
-      <p className={`text-2xl font-bold mt-1 ${accent || "text-ink"}`}>
-        {value}
-      </p>
     </div>
   );
 }

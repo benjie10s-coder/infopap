@@ -109,41 +109,54 @@ export function clearGuestSession(): void {
 }
 
 /**
- * Migrate ALL guest documents to a user account (not just invoices).
+ * Document type mapping from ShareModal types to DB table names.
  */
-export async function migrateGuestInvoices(
-  guestSessionId: string,
+type DocumentTable =
+  | "Invoice"
+  | "CashSale"
+  | "DeliveryNote"
+  | "Receipt"
+  | "PurchaseOrder"
+  | "Quotation";
+
+const DOC_TYPE_TO_TABLE: Record<string, DocumentTable> = {
+  invoice: "Invoice",
+  "cash-sale": "CashSale",
+  "delivery-note": "DeliveryNote",
+  receipt: "Receipt",
+  "purchase-order": "PurchaseOrder",
+  quotation: "Quotation",
+};
+
+/**
+ * Migrate a SINGLE guest document to a user account by publicId.
+ * Used when a guest signs up via the "Save this document" prompt.
+ * Returns true if the document was successfully migrated.
+ */
+export async function migrateSingleDocument(
+  publicId: string,
+  documentType: string,
   userId: string
-): Promise<number> {
+): Promise<boolean> {
   const admin = getAdminClient();
 
-  const tables = [
-    "Invoice",
-    "CashSale",
-    "DeliveryNote",
-    "Receipt",
-    "PurchaseOrder",
-    "Quotation",
-  ] as const;
-
-  let totalMigrated = 0;
-
-  for (const table of tables) {
-    const { data, error } = await admin
-      .from(table)
-      .update({ userId, guestSessionId: null })
-      .eq("guestSessionId", guestSessionId)
-      .is("userId", null)
-      .select("id");
-
-    if (error) {
-      // Log but don't fail — some tables might not have guestSessionId yet
-      console.error(`Failed to migrate guest ${table}: ${error.message}`);
-      continue;
-    }
-
-    totalMigrated += data?.length || 0;
+  const table = DOC_TYPE_TO_TABLE[documentType];
+  if (!table) {
+    console.error(`Unknown document type for migration: ${documentType}`);
+    return false;
   }
 
-  return totalMigrated;
+  const { data, error } = await admin
+    .from(table)
+    .update({ userId, guestSessionId: null })
+    .eq("publicId", publicId)
+    .is("userId", null)
+    .select("id");
+
+  if (error) {
+    console.error(`Failed to migrate guest ${table}: ${error.message}`);
+    return false;
+  }
+
+  return (data?.length || 0) > 0;
 }

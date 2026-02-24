@@ -1,6 +1,7 @@
 // app/auth/login/page.tsx — Login page
 "use client";
 
+import { useEffect } from "react";
 import { AuthNav } from "@/components/AuthNav";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
@@ -9,6 +10,23 @@ import { Suspense } from "react";
 function LoginContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+
+  // On mount, check if there's a pending document save from guest mode
+  // (user may land on login instead of signup)
+  useEffect(() => {
+    const pending = localStorage.getItem("invopap_pending_save");
+    if (pending) {
+      try {
+        const parsed = JSON.parse(pending);
+        if (parsed.publicId && parsed.documentType) {
+          document.cookie = `invopap_pending_doc=${encodeURIComponent(pending)}; path=/; max-age=600; SameSite=Lax`;
+        }
+      } catch {
+        // Invalid JSON — ignore
+      }
+      localStorage.removeItem("invopap_pending_save");
+    }
+  }, []);
 
   async function handleGoogleLogin() {
     const supabase = createBrowserClient();

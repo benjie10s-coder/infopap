@@ -174,28 +174,12 @@ export default async function DashboardPage() {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  // Compute aggregate stats
-  const totalDocs = allDocs.length;
-  const totalPaid = allDocs.filter((d) => d.isPaid).length;
-  const totalDue = totalDocs - totalPaid;
-  const paidAmount = allDocs
-    .filter((d) => d.isPaid)
-    .reduce((sum, d) => sum + d.amount, 0);
-  const totalAmount = allDocs.reduce((sum, d) => sum + d.amount, 0);
-
   return (
     <DashboardClient
       user={{
         displayName: dbUser.name || "User",
         email: dbUser.email,
         avatarUrl: dbUser.avatarUrl,
-      }}
-      stats={{
-        totalInvoices: totalDocs,
-        totalPaid,
-        totalDue,
-        totalAmount,
-        paidAmount,
       }}
       documents={allDocs.slice(0, 30)}
     />
