@@ -71,7 +71,7 @@ export function NarrowSidebarRail() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed left-0 top-0 bottom-0 z-40 w-14 bg-white border-r border-mist flex flex-col items-center py-4 gap-1">
+    <div className="fixed left-0 top-14 bottom-0 z-40 w-14 bg-white border-r border-mist flex flex-col items-center py-4 gap-1">
       {/* Expand button */}
       <button
         onClick={open}

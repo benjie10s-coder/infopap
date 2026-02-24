@@ -76,24 +76,24 @@ export function DocumentLibraryClient({
 
   return (
     <div className="min-h-screen bg-mist/30">
-      {/* Narrow icon rail sidebar */}
+      {/* Full-width top bar */}
+      <header className="sticky top-0 z-50 bg-white border-b border-mist">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-14">
+          <Link
+            href="/"
+            className="text-xl font-display font-bold text-lagoon"
+          >
+            Invopap
+          </Link>
+          <UserNav user={user} />
+        </div>
+      </header>
+
+      {/* Narrow icon rail sidebar (below navbar) */}
       <NarrowSidebarRail />
 
       {/* Main content offset by rail width */}
       <div className="pl-14">
-        {/* Top bar */}
-        <header className="bg-white border-b border-mist">
-          <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3">
-            <Link
-              href="/"
-              className="text-xl font-display font-bold text-lagoon"
-            >
-              Invopap
-            </Link>
-            <UserNav user={user} />
-          </div>
-        </header>
-
         <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -276,7 +276,7 @@ export function DocumentLibraryClient({
           As a registered user, you can download and share your paid documents unlimited times.
         </p>
         </div>
-      </div>
+        </div>
 
       {/* Share Modal */}
       {shareDoc && (
