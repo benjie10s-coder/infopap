@@ -10,7 +10,7 @@ import { QuotationPreview } from "@/components/QuotationPreview";
 import { QuotationOptionsSidebar } from "@/components/QuotationOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
-import { SidebarToggleButton } from "@/components/LeftNavSidebar";
+import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 
 export function QuotationEditor() {
@@ -167,8 +167,7 @@ export function QuotationEditor() {
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-mist safe-top">
         <div className="max-w-[1400px] mx-auto px-3 sm:px-4">
           <div className="flex items-center justify-between h-12 sm:h-14">
-            <div className="flex items-center gap-1 shrink-0">
-              <SidebarToggleButton />
+            <div className="flex items-center shrink-0">
               <Link href="/" className="text-lg sm:text-xl font-display font-bold text-lagoon">
                 Invopap
               </Link>
@@ -232,8 +231,11 @@ export function QuotationEditor() {
         </div>
       </header>
 
+      {/* Narrow sidebar rail for logged-in users */}
+      {user && <NarrowSidebarRail />}
+
       {/* ─── Main content: 2-column layout ─── */}
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className={`max-w-[1400px] mx-auto px-3 sm:px-4 py-4 sm:py-6 ${user ? "pl-14" : ""}`}>
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           {/* Left: Form or Preview */}
           <div className="flex-1 min-w-0">

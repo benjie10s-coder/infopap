@@ -10,7 +10,7 @@ import { InvoicePreview } from "@/components/InvoicePreview";
 import { OptionsSidebar } from "@/components/OptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
-import { SidebarToggleButton } from "@/components/LeftNavSidebar";
+import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 
 export function InvoiceEditor() {
@@ -168,8 +168,7 @@ export function InvoiceEditor() {
         <div className="max-w-[1400px] mx-auto px-3 sm:px-4">
           {/* Row 1: Logo + Toggle + Auth */}
           <div className="flex items-center justify-between h-12 sm:h-14">
-            <div className="flex items-center gap-1 shrink-0">
-              <SidebarToggleButton />
+            <div className="flex items-center shrink-0">
               <Link href="/" className="text-lg sm:text-xl font-display font-bold text-lagoon">
                 Invopap
               </Link>
@@ -237,8 +236,11 @@ export function InvoiceEditor() {
         </div>
       </header>
 
+      {/* Narrow sidebar rail for logged-in users */}
+      {user && <NarrowSidebarRail />}
+
       {/* ─── Main content: 2-column layout ─── */}
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className={`max-w-[1400px] mx-auto px-3 sm:px-4 py-4 sm:py-6 ${user ? "pl-14" : ""}`}>
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           {/* Main area: Form or Preview */}
           <div className="flex-1 min-w-0">

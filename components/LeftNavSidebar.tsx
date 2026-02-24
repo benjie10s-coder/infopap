@@ -203,19 +203,3 @@ export function ExpandedSidebarOverlay() {
   );
 }
 
-/**
- * Hamburger toggle button — used in editor headers (where the narrow rail is hidden).
- */
-export function SidebarToggleButton({ className }: { className?: string }) {
-  const { toggle } = useSidebarState();
-
-  return (
-    <button
-      onClick={toggle}
-      className={`rounded-lg p-2 text-ink/50 hover:text-ink hover:bg-mist/50 transition-colors touch-target flex items-center justify-center ${className || ""}`}
-      aria-label="Toggle navigation"
-    >
-      <MenuIcon />
-    </button>
-  );
-}
