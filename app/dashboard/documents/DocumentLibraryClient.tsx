@@ -77,7 +77,7 @@ export function DocumentLibraryClient({
   return (
     <div className="min-h-screen bg-mist/30">
       {/* Full-width top bar */}
-      <header className="sticky top-0 z-50 bg-white border-b border-mist">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-mist">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-14">
           <Link
             href="/"

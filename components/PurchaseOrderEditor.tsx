@@ -170,7 +170,7 @@ export function PurchaseOrderEditor() {
   return (
     <div className="min-h-screen bg-mist/30">
       {/* Top bar */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-mist safe-top">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-mist safe-top">
         <div className="max-w-[1400px] mx-auto px-3 sm:px-4">
           <div className="flex items-center justify-between h-12 sm:h-14">
             <div className="flex items-center shrink-0">
