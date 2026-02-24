@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Fraunces } from "next/font/google";
 import { AuthProvider } from "@/lib/hooks/AuthProvider";
 import { SidebarProvider } from "@/lib/hooks/SidebarProvider";
-import { LeftNavSidebar } from "@/components/LeftNavSidebar";
+import { ExpandedSidebarOverlay } from "@/components/LeftNavSidebar";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -48,7 +48,7 @@ export default function RootLayout({
       <body className="font-body antialiased text-ink bg-white">
         <AuthProvider>
           <SidebarProvider>
-            <LeftNavSidebar />
+            <ExpandedSidebarOverlay />
             {children}
           </SidebarProvider>
         </AuthProvider>

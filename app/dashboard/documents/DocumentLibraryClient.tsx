@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { UserNav } from "@/components/UserNav";
+import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 import { ShareModal } from "@/components/ShareModal";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import Link from "next/link";
@@ -75,28 +76,25 @@ export function DocumentLibraryClient({
 
   return (
     <div className="min-h-screen bg-mist/30">
-      {/* Top bar */}
-      <header className="bg-white border-b border-mist">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3">
-          <Link
-            href="/"
-            className="text-xl font-display font-bold text-lagoon"
-          >
-            Invopap
-          </Link>
-          <div className="flex items-center gap-4">
+      {/* Narrow icon rail sidebar */}
+      <NarrowSidebarRail />
+
+      {/* Main content offset by rail width */}
+      <div className="pl-14">
+        {/* Top bar */}
+        <header className="bg-white border-b border-mist">
+          <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3">
             <Link
-              href="/dashboard"
-              className="text-sm text-ink/60 hover:text-ink transition-colors"
+              href="/"
+              className="text-xl font-display font-bold text-lagoon"
             >
-              Dashboard
+              Invopap
             </Link>
             <UserNav user={user} />
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
+        <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -277,6 +275,7 @@ export function DocumentLibraryClient({
         <p className="text-center text-xs text-ink/40">
           As a registered user, you can download and share your paid documents unlimited times.
         </p>
+        </div>
       </div>
 
       {/* Share Modal */}

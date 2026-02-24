@@ -2,7 +2,7 @@
 "use client";
 
 import { UserNav } from "@/components/UserNav";
-import { SidebarToggleButton } from "@/components/LeftNavSidebar";
+import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import Link from "next/link";
 
@@ -39,23 +39,25 @@ export function DashboardClient({
 }: DashboardClientProps) {
   return (
     <div className="min-h-screen bg-mist/30">
-      {/* Top bar */}
-      <header className="bg-white border-b border-mist">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-2">
-            <SidebarToggleButton />
+      {/* Narrow icon rail sidebar */}
+      <NarrowSidebarRail />
+
+      {/* Main content offset by rail width */}
+      <div className="pl-14">
+        {/* Top bar */}
+        <header className="bg-white border-b border-mist">
+          <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3">
             <Link
               href="/"
               className="text-xl font-display font-bold text-lagoon"
             >
               Invopap
             </Link>
+            <UserNav user={user} />
           </div>
-          <UserNav user={user} />
-        </div>
-      </header>
+        </header>
 
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+        <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
         {/* Greeting */}
         <div>
           <h1 className="text-2xl font-display font-bold text-ink">
@@ -173,6 +175,7 @@ export function DashboardClient({
             Refunds
           </Link>
         </footer>
+        </div>
       </div>
     </div>
   );
