@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
-import { clearGuestSession, migrateSingleDocument } from "@/lib/session";
+import { clearGuestSession, migrateSingleDocument, migrateAllGuestDocuments, getGuestSessionId } from "@/lib/session";
 import { createRequestLogger } from "@/lib/logger";
 import { cookies } from "next/headers";
 
@@ -68,6 +68,14 @@ export async function GET(request: NextRequest) {
       .eq("externalId", user.id)
       .single();
 
+    if (!ourUser) {
+      // No app user record found — sign out the Supabase session so we don't
+      // land on a stale/wrong account's dashboard
+      await supabase.auth.signOut();
+      logger.error("auth_callback_no_user_record", { supabaseId: user.id, email: user.email });
+      return NextResponse.redirect(`${origin}/auth/login?error=account_not_found`);
+    }
+
     if (ourUser) {
       // Check for a pending single-document save (set before OAuth redirect)
       const cookieStore = cookies();
@@ -116,7 +124,17 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Always clear guest session — no bulk migration
+      // Always clear guest session — bulk migrate all guest docs first
+      const guestSessionId = getGuestSessionId();
+      if (guestSessionId) {
+        const migrated = await migrateAllGuestDocuments(guestSessionId, ourUser.id);
+        if (migrated > 0) {
+          logger.info("guest_documents_bulk_claimed", {
+            userId: ourUser.id,
+            count: migrated,
+          });
+        }
+      }
       clearGuestSession();
     }
 

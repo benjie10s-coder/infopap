@@ -11,7 +11,6 @@ import { DeliveryNoteOptionsSidebar } from "@/components/DeliveryNoteOptionsSide
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
-import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 
 export function DeliveryNoteEditor() {
   const store = useDeliveryNoteStore();

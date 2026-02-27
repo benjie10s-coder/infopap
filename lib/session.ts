@@ -160,3 +160,42 @@ export async function migrateSingleDocument(
 
   return (data?.length || 0) > 0;
 }
+
+/**
+ * Migrate ALL guest documents for a given guestSessionId to a user account.
+ * Called during auth callback to claim all pre-login documents.
+ * Returns the total number of documents migrated.
+ */
+export async function migrateAllGuestDocuments(
+  guestSessionId: string,
+  userId: string
+): Promise<number> {
+  const admin = getAdminClient();
+  const tables: DocumentTable[] = [
+    "Invoice",
+    "CashSale",
+    "DeliveryNote",
+    "Receipt",
+    "PurchaseOrder",
+    "Quotation",
+  ];
+
+  let total = 0;
+  await Promise.all(
+    tables.map(async (table) => {
+      const { data, error } = await admin
+        .from(table)
+        .update({ userId, guestSessionId: null })
+        .eq("guestSessionId", guestSessionId)
+        .is("userId", null)
+        .select("id");
+      if (error) {
+        console.error(`Failed to migrate guest ${table}: ${error.message}`);
+      } else {
+        total += data?.length || 0;
+      }
+    })
+  );
+
+  return total;
+}

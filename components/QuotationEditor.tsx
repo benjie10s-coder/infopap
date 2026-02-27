@@ -11,7 +11,6 @@ import { QuotationOptionsSidebar } from "@/components/QuotationOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
-import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 
 export function QuotationEditor() {
   const store = useQuotationStore();

@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
+import { getGuestSessionId } from "@/lib/session";
 import { DashboardClient } from "./DashboardClient";
 
 export default async function DashboardPage() {
@@ -26,44 +27,49 @@ export default async function DashboardPage() {
   }
 
   // Fetch recent docs from ALL 6 tables in parallel
+  // Also include any documents the user created before signing up (guestSessionId)
   const selectCols = "id, publicId, toName, isPaid, createdAt";
+  const guestSessionId = getGuestSessionId();
+  const ownerFilter = guestSessionId
+    ? `userId.eq.${dbUser.id},guestSessionId.eq.${guestSessionId}`
+    : `userId.eq.${dbUser.id}`;
 
   const [invoices, cashSales, deliveryNotes, receipts, purchaseOrders, quotations] =
     await Promise.all([
       admin
         .from("Invoice")
         .select(`${selectCols}, invoiceNumber, documentType, total, currency`)
-        .eq("userId", dbUser.id)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false })
         .limit(10),
       admin
         .from("CashSale")
         .select(`${selectCols}, cashSaleNumber, total, currency`)
-        .eq("userId", dbUser.id)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false })
         .limit(10),
       admin
         .from("DeliveryNote")
         .select(`${selectCols}, deliveryNoteNumber`)
-        .eq("userId", dbUser.id)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false })
         .limit(10),
       admin
         .from("Receipt")
         .select(`${selectCols}, receiptNumber, amountReceived, currency`)
-        .eq("userId", dbUser.id)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false })
         .limit(10),
       admin
         .from("PurchaseOrder")
         .select(`${selectCols}, purchaseOrderNumber, total, currency`)
-        .eq("userId", dbUser.id)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false })
         .limit(10),
       admin
         .from("Quotation")
         .select(`${selectCols}, quotationNumber, total, currency`)
-        .eq("userId", dbUser.id)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false })
         .limit(10),
     ]);

@@ -1,17 +1,12 @@
 // app/view/cs/[publicId]/PublicCashSaleView.tsx — Client-side public cash sale viewer
 "use client";
 
-import { useState, useCallback } from "react";
-import { formatDate, formatCurrency } from "@/lib/utils/format";
+import { useState, useCallback, useMemo } from "react";
+import type { CashSaleWithItems } from "@/lib/db/types";
+import { CashSalePdf } from "@/lib/pdf-components/cash-sale";
+import { PdfPreview } from "@/components/PdfPreview";
 import { PaymentModal } from "@/components/PaymentModal";
 import { ShareModal } from "@/components/ShareModal";
-
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  cash: "Cash",
-  mpesa: "M-Pesa",
-  bank: "Bank Transfer",
-  card: "Card",
-};
 
 interface CashSaleData {
   id: string;
@@ -73,8 +68,76 @@ export function PublicCashSaleView({
 }) {
   const [showPayment, setShowPayment] = useState(false);
   const [showShare, setShowShare] = useState(false);
-  const accent = cs.accentColor || "#22c55e";
   const isGuest = !cs.userId;
+
+  const cashSaleRecord = useMemo((): CashSaleWithItems => ({
+    id: cs.id,
+    userId: cs.userId,
+    guestSessionId: null,
+    publicId: cs.publicId,
+    documentTitle: cs.documentTitle,
+    cashSaleNumber: cs.cashSaleNumber,
+    issueDate: cs.issueDate,
+    orderNumber: cs.orderNumber,
+    referenceInvoiceNumber: cs.referenceInvoiceNumber,
+    paymentMethod: cs.paymentMethod,
+    transactionCode: cs.transactionCode,
+    fromName: cs.fromName,
+    fromEmail: cs.fromEmail,
+    fromPhone: cs.fromPhone,
+    fromMobile: cs.fromMobile,
+    fromFax: cs.fromFax,
+    fromAddress: cs.fromAddress,
+    fromCity: cs.fromCity,
+    fromZipCode: cs.fromZipCode,
+    fromBusinessNumber: cs.fromBusinessNumber,
+    toName: cs.toName,
+    toEmail: cs.toEmail,
+    toPhone: cs.toPhone,
+    toMobile: cs.toMobile,
+    toFax: cs.toFax,
+    toAddress: cs.toAddress,
+    toCity: cs.toCity,
+    toZipCode: cs.toZipCode,
+    toBusinessNumber: cs.toBusinessNumber,
+    currency: cs.currency,
+    taxRate: cs.taxRate,
+    discountType: cs.discountType,
+    discountValue: cs.discountValue,
+    subtotal: cs.subtotal,
+    taxAmount: cs.taxAmount,
+    discountAmount: cs.discountAmount,
+    total: cs.total,
+    accentColor: cs.accentColor,
+    logoDataUrl: cs.logoDataUrl,
+    signatureDataUrl: cs.signatureDataUrl,
+    notes: cs.notes,
+    isPaid: cs.isPaid,
+    paidAt: null,
+    pdfUrl: null,
+    createdAt: "",
+    updatedAt: "",
+    lineItems: cs.lineItems.map((li, i) => ({
+      id: li.id,
+      cashSaleId: cs.id,
+      description: li.description,
+      additionalDetails: li.additionalDetails,
+      quantity: li.quantity,
+      rate: li.rate,
+      amount: li.amount,
+      sortOrder: i,
+      createdAt: "",
+      updatedAt: "",
+    })),
+    photos: cs.photos.map((p, i) => ({
+      id: p.id,
+      cashSaleId: cs.id,
+      url: p.url,
+      filename: null,
+      sortOrder: i,
+      createdAt: "",
+    })),
+  }), [cs]);
 
   const handleDownload = useCallback(() => {
     if (!cs.isPaid) {
@@ -123,258 +186,7 @@ export function PublicCashSaleView({
 
       {/* Cash Sale */}
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <div className="relative bg-white rounded-xl shadow-soft border border-mist overflow-hidden">
-          {/* Watermark if unpaid */}
-          {!cs.isPaid && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
-              <div
-                className="text-6xl sm:text-7xl font-bold text-ink/[0.04] whitespace-nowrap select-none"
-                style={{ transform: "rotate(-30deg)" }}
-              >
-                PREVIEW
-              </div>
-            </div>
-          )}
-
-          <div className="relative z-0 p-6 sm:p-8 space-y-6">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                {cs.logoDataUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={cs.logoDataUrl}
-                    alt="Logo"
-                    className="h-12 w-auto object-contain"
-                  />
-                )}
-                <h1
-                  className="text-2xl font-display font-bold"
-                  style={{ color: accent }}
-                >
-                  {cs.documentTitle || "CASH SALE"}
-                </h1>
-              </div>
-              <div className="text-right text-sm text-ink/60">
-                <p className="font-medium text-ink">
-                  {cs.cashSaleNumber || "—"}
-                </p>
-                <p>Date: {formatDate(cs.issueDate)}</p>
-                {cs.orderNumber && <p>Order: {cs.orderNumber}</p>}
-                {cs.referenceInvoiceNumber && (
-                  <p>Invoice: {cs.referenceInvoiceNumber}</p>
-                )}
-              </div>
-            </div>
-
-            {/* From / Sold To */}
-            <div className="grid grid-cols-2 gap-6 text-sm">
-              <div>
-                <p
-                  className="text-xs font-semibold uppercase tracking-wider mb-1"
-                  style={{ color: accent }}
-                >
-                  From
-                </p>
-                <PartyBlock
-                  name={cs.fromName}
-                  email={cs.fromEmail}
-                  phone={cs.fromPhone}
-                  mobile={cs.fromMobile}
-                  fax={cs.fromFax}
-                  address={cs.fromAddress}
-                  city={cs.fromCity}
-                  zipCode={cs.fromZipCode}
-                  businessNumber={cs.fromBusinessNumber}
-                />
-              </div>
-              <div>
-                <p
-                  className="text-xs font-semibold uppercase tracking-wider mb-1"
-                  style={{ color: accent }}
-                >
-                  Sold To
-                </p>
-                <PartyBlock
-                  name={cs.toName}
-                  email={cs.toEmail}
-                  phone={cs.toPhone}
-                  mobile={cs.toMobile}
-                  fax={cs.toFax}
-                  address={cs.toAddress}
-                  city={cs.toCity}
-                  zipCode={cs.toZipCode}
-                  businessNumber={cs.toBusinessNumber}
-                />
-              </div>
-            </div>
-
-            {/* Line items table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ backgroundColor: accent }}>
-                    <th className="px-3 py-2 text-left text-white font-medium rounded-tl-lg">
-                      Description
-                    </th>
-                    <th className="px-3 py-2 text-right text-white font-medium">
-                      Qty
-                    </th>
-                    <th className="px-3 py-2 text-right text-white font-medium">
-                      Rate
-                    </th>
-                    <th className="px-3 py-2 text-right text-white font-medium rounded-tr-lg">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cs.lineItems.map((item, i) => (
-                    <tr
-                      key={item.id}
-                      className={i % 2 === 1 ? "bg-mist/30" : ""}
-                    >
-                      <td className="px-3 py-2">
-                        <p className="text-ink">
-                          {item.description || "—"}
-                        </p>
-                        {item.additionalDetails && (
-                          <p className="text-ink/40 text-xs">
-                            {item.additionalDetails}
-                          </p>
-                        )}
-                      </td>
-                      <td className="px-3 py-2 text-right text-ink/70">
-                        {item.quantity}
-                      </td>
-                      <td className="px-3 py-2 text-right text-ink/70">
-                        {formatCurrency(item.rate, cs.currency)}
-                      </td>
-                      <td className="px-3 py-2 text-right font-medium text-ink">
-                        {formatCurrency(item.amount, cs.currency)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Totals */}
-            <div className="flex justify-end">
-              <div className="w-64 space-y-1 text-sm">
-                <div className="flex justify-between text-ink/60">
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(cs.subtotal, cs.currency)}</span>
-                </div>
-
-                {cs.discountAmount > 0 && (
-                  <div className="flex justify-between text-ink/60">
-                    <span>
-                      Discount
-                      {cs.discountType === "PERCENTAGE"
-                        ? ` (${cs.discountValue}%)`
-                        : ""}
-                    </span>
-                    <span className="text-green-600">
-                      -{formatCurrency(cs.discountAmount, cs.currency)}
-                    </span>
-                  </div>
-                )}
-
-                {cs.taxAmount > 0 && (
-                  <div className="flex justify-between text-ink/60">
-                    <span>Tax ({cs.taxRate}%)</span>
-                    <span>
-                      {formatCurrency(cs.taxAmount, cs.currency)}
-                    </span>
-                  </div>
-                )}
-
-                <div
-                  className="flex justify-between pt-2 border-t font-bold text-base"
-                  style={{ borderColor: accent, color: accent }}
-                >
-                  <span>Total</span>
-                  <span>
-                    {formatCurrency(cs.total, cs.currency)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Method */}
-            <div
-              className="rounded-lg px-4 py-3 text-sm font-medium flex items-center justify-between"
-              style={{
-                backgroundColor: `${accent}15`,
-                borderLeft: `4px solid ${accent}`,
-              }}
-            >
-              <span className="text-ink/70">Payment Method</span>
-              <span style={{ color: accent }} className="font-bold">
-                {PAYMENT_METHOD_LABELS[cs.paymentMethod] || cs.paymentMethod}
-                {cs.transactionCode && (
-                  <span className="ml-2 text-ink/50 font-normal text-xs">
-                    Ref: {cs.transactionCode}
-                  </span>
-                )}
-              </span>
-            </div>
-
-            {/* Notes */}
-            {cs.notes && (
-              <div className="text-sm text-ink/60 border-t border-mist pt-4">
-                <p className="font-semibold text-ink/40 text-xs uppercase tracking-wider mb-1">
-                  Notes
-                </p>
-                <p className="whitespace-pre-wrap">{cs.notes}</p>
-              </div>
-            )}
-
-            {/* Signature */}
-            {cs.signatureDataUrl && (
-              <div className="flex justify-end pt-4">
-                <div className="text-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={cs.signatureDataUrl}
-                    alt="Signature"
-                    className="h-16 w-auto object-contain"
-                  />
-                  <div className="border-t border-ink/20 mt-1 pt-1">
-                    <p className="text-xs text-ink/40">Authorized Signature</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Photos */}
-            {cs.photos.length > 0 && (
-              <div className="space-y-2 border-t border-mist pt-4">
-                <p className="text-xs font-semibold text-ink/40 uppercase tracking-wider">
-                  Attachments
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {cs.photos.map((photo) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={photo.id}
-                      src={photo.url}
-                      alt="Attachment"
-                      className="h-20 w-20 object-cover rounded-lg border border-mist"
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Footer bar */}
-            <div
-              className="h-2 rounded-full mt-6"
-              style={{ backgroundColor: accent }}
-            />
-          </div>
-        </div>
+        <PdfPreview document={<CashSalePdf cashSale={cashSaleRecord} showWatermark={!cs.isPaid} />} />
 
         {/* Footer */}
         <div className="text-center py-6">
@@ -416,51 +228,3 @@ export function PublicCashSaleView({
   );
 }
 
-function PartyBlock({
-  name,
-  email,
-  phone,
-  mobile,
-  fax,
-  address,
-  city,
-  zipCode,
-  businessNumber,
-}: {
-  name: string;
-  email: string | null;
-  phone: string | null;
-  mobile?: string | null;
-  fax?: string | null;
-  address: string | null;
-  city: string | null;
-  zipCode: string | null;
-  businessNumber: string | null;
-}) {
-  const hasContent = name || email || phone || address;
-
-  if (!hasContent) {
-    return <p className="text-ink/30 italic">Not specified</p>;
-  }
-
-  return (
-    <div className="space-y-0.5 text-ink/70">
-      {name && <p className="font-medium text-ink">{name}</p>}
-      {email && <p>{email}</p>}
-      {phone && <p>{phone}</p>}
-      {mobile && <p>{mobile}</p>}
-      {fax && <p className="text-ink/50">Fax: {fax}</p>}
-      {address && <p>{address}</p>}
-      {(city || zipCode) && (
-        <p>
-          {city}
-          {city && zipCode && ", "}
-          {zipCode}
-        </p>
-      )}
-      {businessNumber && (
-        <p className="text-xs text-ink/40">PIN: {businessNumber}</p>
-      )}
-    </div>
-  );
-}

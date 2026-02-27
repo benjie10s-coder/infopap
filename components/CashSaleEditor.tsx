@@ -11,7 +11,6 @@ import { CashSaleOptionsSidebar } from "@/components/CashSaleOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
-import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 
 export function CashSaleEditor() {
   const store = useCashSaleStore();

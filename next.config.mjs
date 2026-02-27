@@ -48,6 +48,7 @@ const nextConfig = {
               "font-src 'self' data:",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.safaricom.co.ke https://sandbox.safaricom.co.ke https://*.sentry.io",
               "frame-ancestors 'none'",
+              "frame-src 'self' blob:",
             ].join("; "),
           },
         ],

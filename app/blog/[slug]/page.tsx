@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 export default function BlogPostPage({
-  params,
+  params: _params,
 }: {
   params: { slug: string };
 }) {

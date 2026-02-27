@@ -11,7 +11,6 @@ import { OptionsSidebar } from "@/components/OptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
-import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 
 export function InvoiceEditor() {
   const store = useInvoiceStore();

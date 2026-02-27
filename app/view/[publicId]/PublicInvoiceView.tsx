@@ -1,8 +1,10 @@
 // app/view/[publicId]/PublicInvoiceView.tsx — Client-side public invoice viewer
 "use client";
 
-import { useState, useCallback } from "react";
-import { formatCurrency, formatDate } from "@/lib/utils/format";
+import { useState, useCallback, useMemo } from "react";
+import type { InvoiceWithItems } from "@/lib/db/types";
+import { InvoicePdf } from "@/lib/pdf-components/invoice";
+import { PdfPreview } from "@/components/PdfPreview";
 import { PaymentModal } from "@/components/PaymentModal";
 import { ShareModal } from "@/components/ShareModal";
 
@@ -56,8 +58,75 @@ interface InvoiceData {
 export function PublicInvoiceView({ invoice }: { invoice: InvoiceData }) {
   const [showPayment, setShowPayment] = useState(false);
   const [showShare, setShowShare] = useState(false);
-  const accent = invoice.accentColor || "#1f8ea3";
   const isGuest = !invoice.userId;
+
+  const invoiceRecord = useMemo((): InvoiceWithItems => ({
+    id: invoice.id,
+    userId: invoice.userId,
+    guestSessionId: null,
+    publicId: invoice.publicId,
+    documentType: invoice.documentType || "INVOICE",
+    documentTitle: invoice.documentTitle,
+    invoiceNumber: invoice.invoiceNumber,
+    issueDate: invoice.issueDate,
+    dueDate: invoice.dueDate,
+    paymentTerms: "",
+    fromName: invoice.fromName,
+    fromEmail: invoice.fromEmail,
+    fromPhone: invoice.fromPhone,
+    fromMobile: null,
+    fromFax: null,
+    fromAddress: invoice.fromAddress,
+    fromCity: invoice.fromCity,
+    fromZipCode: invoice.fromZipCode,
+    fromBusinessNumber: invoice.fromBusinessNumber,
+    toName: invoice.toName,
+    toEmail: invoice.toEmail,
+    toPhone: invoice.toPhone,
+    toMobile: null,
+    toFax: null,
+    toAddress: invoice.toAddress,
+    toCity: invoice.toCity,
+    toZipCode: invoice.toZipCode,
+    toBusinessNumber: invoice.toBusinessNumber,
+    currency: invoice.currency,
+    taxRate: invoice.taxRate,
+    discountType: invoice.discountType,
+    discountValue: invoice.discountValue,
+    subtotal: invoice.subtotal,
+    taxAmount: invoice.taxAmount,
+    discountAmount: invoice.discountAmount,
+    total: invoice.total,
+    accentColor: invoice.accentColor,
+    logoDataUrl: invoice.logoDataUrl,
+    signatureDataUrl: invoice.signatureDataUrl,
+    notes: invoice.notes,
+    isPaid: invoice.isPaid,
+    paidAt: null,
+    pdfUrl: null,
+    createdAt: "",
+    updatedAt: "",
+    lineItems: invoice.lineItems.map((li, i) => ({
+      id: li.id,
+      invoiceId: invoice.id,
+      description: li.description,
+      additionalDetails: li.additionalDetails,
+      quantity: li.quantity,
+      rate: li.rate,
+      amount: li.amount,
+      sortOrder: i,
+      createdAt: "",
+      updatedAt: "",
+    })),
+    photos: invoice.photos.map((p, i) => ({
+      id: p.id,
+      invoiceId: invoice.id,
+      url: p.url,
+      filename: null,
+      sortOrder: i,
+      createdAt: "",
+    })),
+  }), [invoice]);
 
   const handleDownload = useCallback(() => {
     if (!invoice.isPaid) {
@@ -96,182 +165,7 @@ export function PublicInvoiceView({ invoice }: { invoice: InvoiceData }) {
 
       {/* Invoice */}
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <div className="relative bg-white rounded-xl shadow-soft border border-mist overflow-hidden">
-          {/* Watermark if unpaid */}
-          {!invoice.isPaid && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
-              <div
-                className="text-6xl sm:text-7xl font-bold text-ink/[0.04] whitespace-nowrap select-none"
-                style={{ transform: "rotate(-30deg)" }}
-              >
-                INVOPAP — PREVIEW
-              </div>
-            </div>
-          )}
-
-          <div className="relative z-0 p-6 sm:p-10 space-y-6">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                {invoice.logoDataUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={invoice.logoDataUrl}
-                    alt="Logo"
-                    className="h-14 w-auto object-contain"
-                  />
-                )}
-                <h1
-                  className="text-2xl font-display font-bold"
-                  style={{ color: accent }}
-                >
-                  {invoice.documentTitle}
-                </h1>
-              </div>
-              <div className="text-right text-sm text-ink/60">
-                <p className="font-medium text-ink">{invoice.invoiceNumber}</p>
-                <p>Issued: {formatDate(invoice.issueDate)}</p>
-                <p>Due: {invoice.dueDate ? formatDate(invoice.dueDate) : "—"}</p>
-              </div>
-            </div>
-
-            {/* From / To */}
-            <div className="grid grid-cols-2 gap-6 text-sm">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: accent }}>
-                  From
-                </p>
-                <PartyBlock
-                  name={invoice.fromName}
-                  email={invoice.fromEmail}
-                  phone={invoice.fromPhone}
-                  address={invoice.fromAddress}
-                  city={invoice.fromCity}
-                  zipCode={invoice.fromZipCode}
-                  businessNumber={invoice.fromBusinessNumber}
-                />
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: accent }}>
-                  To
-                </p>
-                <PartyBlock
-                  name={invoice.toName}
-                  email={invoice.toEmail}
-                  phone={invoice.toPhone}
-                  address={invoice.toAddress}
-                  city={invoice.toCity}
-                  zipCode={invoice.toZipCode}
-                  businessNumber={invoice.toBusinessNumber}
-                />
-              </div>
-            </div>
-
-            {/* Line items */}
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ backgroundColor: accent }}>
-                  <th className="px-3 py-2 text-left text-white font-medium rounded-tl-lg">Description</th>
-                  <th className="px-3 py-2 text-right text-white font-medium">Qty</th>
-                  <th className="px-3 py-2 text-right text-white font-medium">Rate</th>
-                  <th className="px-3 py-2 text-right text-white font-medium rounded-tr-lg">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoice.lineItems.map((item, i) => (
-                  <tr key={item.id} className={i % 2 === 1 ? "bg-mist/30" : ""}>
-                    <td className="px-3 py-2">
-                      <p className="text-ink">{item.description || "—"}</p>
-                      {item.additionalDetails && (
-                        <p className="text-ink/40 text-xs">{item.additionalDetails}</p>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-right text-ink/70">{item.quantity}</td>
-                    <td className="px-3 py-2 text-right text-ink/70">
-                      {formatCurrency(item.rate, invoice.currency)}
-                    </td>
-                    <td className="px-3 py-2 text-right font-medium text-ink">
-                      {formatCurrency(item.quantity * item.rate, invoice.currency)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Totals */}
-            <div className="flex justify-end">
-              <div className="w-64 space-y-1 text-sm">
-                <div className="flex justify-between text-ink/60">
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(invoice.subtotal, invoice.currency)}</span>
-                </div>
-                {invoice.discountAmount > 0 && (
-                  <div className="flex justify-between text-ink/60">
-                    <span>Discount</span>
-                    <span className="text-green-600">
-                      -{formatCurrency(invoice.discountAmount, invoice.currency)}
-                    </span>
-                  </div>
-                )}
-                {invoice.taxAmount > 0 && (
-                  <div className="flex justify-between text-ink/60">
-                    <span>Tax ({invoice.taxRate}%)</span>
-                    <span>{formatCurrency(invoice.taxAmount, invoice.currency)}</span>
-                  </div>
-                )}
-                <div
-                  className="flex justify-between pt-2 border-t font-bold text-base"
-                  style={{ borderColor: accent, color: accent }}
-                >
-                  <span>Total</span>
-                  <span>{formatCurrency(invoice.total, invoice.currency)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Notes */}
-            {invoice.notes && (
-              <div className="text-sm text-ink/60 border-t border-mist pt-4">
-                <p className="font-semibold text-ink/40 text-xs uppercase tracking-wider mb-1">Notes</p>
-                <p className="whitespace-pre-wrap">{invoice.notes}</p>
-              </div>
-            )}
-
-            {/* Signature */}
-            {invoice.signatureDataUrl && (
-              <div className="flex justify-end pt-4">
-                <div className="text-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={invoice.signatureDataUrl} alt="Signature" className="h-16 w-auto object-contain" />
-                  <div className="border-t border-ink/20 mt-1 pt-1">
-                    <p className="text-xs text-ink/40">Authorized Signature</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Photos */}
-            {invoice.photos && invoice.photos.length > 0 && (
-              <div className="border-t border-mist pt-4 space-y-2">
-                <p className="text-xs font-semibold text-ink/40 uppercase tracking-wider">Attachments</p>
-                <div className="flex flex-wrap gap-2">
-                  {invoice.photos.map((photo, i) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={photo.id}
-                      src={photo.url}
-                      alt={`Attachment ${i + 1}`}
-                      className="h-20 w-20 object-cover rounded-lg border border-mist"
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Footer bar */}
-            <div className="h-2 rounded-full mt-6" style={{ backgroundColor: accent }} />
-          </div>
-        </div>
+        <PdfPreview document={<InvoicePdf invoice={invoiceRecord} showWatermark={!invoice.isPaid} />} />
 
         {/* Footer links */}
         <div className="text-center text-xs text-ink/30 py-6">
@@ -308,28 +202,4 @@ export function PublicInvoiceView({ invoice }: { invoice: InvoiceData }) {
   );
 }
 
-function PartyBlock({
-  name, email, phone, address, city, zipCode, businessNumber,
-}: {
-  name: string; email: string | null; phone: string | null; address: string | null;
-  city: string | null; zipCode: string | null; businessNumber: string | null;
-}) {
-  if (!name && !email && !phone && !address) {
-    return <p className="text-ink/30 italic">Not specified</p>;
-  }
 
-  return (
-    <div className="space-y-0.5 text-ink/70">
-      {name && <p className="font-medium text-ink">{name}</p>}
-      {email && <p>{email}</p>}
-      {phone && <p>{phone}</p>}
-      {address && <p>{address}</p>}
-      {(city || zipCode) && (
-        <p>{city}{city && zipCode && ", "}{zipCode}</p>
-      )}
-      {businessNumber && (
-        <p className="text-xs text-ink/40">PIN: {businessNumber}</p>
-      )}
-    </div>
-  );
-}

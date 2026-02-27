@@ -102,13 +102,13 @@ export function DocumentLibraryClient({
               Document Library
             </h1>
             <p className="text-sm text-ink/50 mt-1">
-              {documents.length} paid document{documents.length !== 1 ? "s" : ""} available for download and sharing
+              {documents.length} document{documents.length !== 1 ? "s" : ""} available for download and sharing
             </p>
           </div>
         </div>
 
         {/* Stats cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
           <button
             onClick={() => setFilter("all")}
             className={`p-4 rounded-xl border text-left transition-all ${
@@ -125,6 +125,7 @@ export function DocumentLibraryClient({
             { type: "cash-sale" as const, label: "Cash Sales" },
             { type: "delivery-note" as const, label: "Delivery Notes" },
             { type: "receipt" as const, label: "Receipts" },
+            { type: "purchase-order" as const, label: "Purchase Orders" },
             { type: "quotation" as const, label: "Quotations" },
           ].map(({ type, label }) => (
             <button
@@ -186,7 +187,7 @@ export function DocumentLibraryClient({
                 </svg>
               </div>
               <p className="text-ink/50 text-sm">
-                {searchQuery ? "No documents match your search" : "No paid documents yet"}
+                {searchQuery ? "No documents match your search" : "No documents yet"}
               </p>
               {!searchQuery && (
                 <Link

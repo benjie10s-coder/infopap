@@ -2,11 +2,12 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
+import { getGuestSessionId } from "@/lib/session";
 import { DocumentLibraryClient } from "./DocumentLibraryClient";
 
 export const metadata = {
   title: "Document Library — Invopap",
-  description: "Access all your paid documents for download and sharing",
+  description: "Access all your documents for download and sharing",
 };
 
 export default async function DocumentLibraryPage() {
@@ -30,46 +31,45 @@ export default async function DocumentLibraryPage() {
     redirect("/auth/login");
   }
 
-  // Fetch ONLY paid documents from all 6 tables in parallel
+  // Fetch all documents from all 6 tables in parallel
+  // Also include any documents the user created before signing up (guestSessionId)
   const selectCols = "id, publicId, toName, isPaid, createdAt";
+  const guestSessionId = getGuestSessionId();
+  const ownerFilter = guestSessionId
+    ? `userId.eq.${dbUser.id},guestSessionId.eq.${guestSessionId}`
+    : `userId.eq.${dbUser.id}`;
 
   const [invoices, cashSales, deliveryNotes, receipts, purchaseOrders, quotations] =
     await Promise.all([
       admin
         .from("Invoice")
         .select(`${selectCols}, invoiceNumber, documentType, total, currency`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
       admin
         .from("CashSale")
         .select(`${selectCols}, cashSaleNumber, total, currency`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
       admin
         .from("DeliveryNote")
         .select(`${selectCols}, deliveryNoteNumber`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
       admin
         .from("Receipt")
         .select(`${selectCols}, receiptNumber, amountReceived, currency`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
       admin
         .from("PurchaseOrder")
         .select(`${selectCols}, purchaseOrderNumber, total, currency`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
       admin
         .from("Quotation")
         .select(`${selectCols}, quotationNumber, total, currency`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
     ]);
 
