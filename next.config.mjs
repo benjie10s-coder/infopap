@@ -42,6 +42,10 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
+              // 'unsafe-inline' is required by Next.js for its runtime styles/scripts.
+              // 'unsafe-eval' is required by PDF.js (used by react-pdf viewer in the browser
+              // to evaluate worker code). It cannot be removed without switching to a
+              // no-eval PDF.js build. @react-pdf/renderer runs server-side only (no eval needed).
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",

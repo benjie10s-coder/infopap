@@ -83,6 +83,7 @@ export default async function DocumentLibraryPage() {
     toName: string;
     amount: number;
     currency: string;
+    isPaid: boolean;
     createdAt: string;
     viewUrl: string;
   };
@@ -99,6 +100,7 @@ export default async function DocumentLibraryPage() {
       toName: inv.toName || "",
       amount: inv.total || 0,
       currency: inv.currency || "KES",
+      isPaid: inv.isPaid,
       createdAt: inv.createdAt,
       viewUrl: `/view/${inv.publicId}`,
     });
@@ -113,6 +115,7 @@ export default async function DocumentLibraryPage() {
       toName: cs.toName || "",
       amount: cs.total || 0,
       currency: cs.currency || "KES",
+      isPaid: cs.isPaid,
       createdAt: cs.createdAt,
       viewUrl: `/view/cs/${cs.publicId}`,
     });
@@ -127,6 +130,7 @@ export default async function DocumentLibraryPage() {
       toName: dn.toName || "",
       amount: 0,
       currency: "KES",
+      isPaid: dn.isPaid,
       createdAt: dn.createdAt,
       viewUrl: `/view/dn/${dn.publicId}`,
     });
@@ -141,6 +145,7 @@ export default async function DocumentLibraryPage() {
       toName: r.toName || "",
       amount: r.amountReceived || 0,
       currency: r.currency || "KES",
+      isPaid: r.isPaid,
       createdAt: r.createdAt,
       viewUrl: `/view/receipt/${r.publicId}`,
     });
@@ -155,6 +160,7 @@ export default async function DocumentLibraryPage() {
       toName: po.toName || "",
       amount: po.total || 0,
       currency: po.currency || "KES",
+      isPaid: po.isPaid,
       createdAt: po.createdAt,
       viewUrl: `/view/po/${po.publicId}`,
     });
@@ -169,6 +175,7 @@ export default async function DocumentLibraryPage() {
       toName: q.toName || "",
       amount: q.total || 0,
       currency: q.currency || "KES",
+      isPaid: q.isPaid,
       createdAt: q.createdAt,
       viewUrl: `/view/quotation/${q.publicId}`,
     });

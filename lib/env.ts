@@ -73,9 +73,9 @@ export function validateEnv(): { valid: boolean; errors: string[]; warnings: str
 
   // Production warnings
   if (process.env.NODE_ENV === "production") {
-    if (!process.env.UPSTASH_REDIS_REST_URL) {
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
       warnings.push(
-        "UPSTASH_REDIS_REST_URL not set — rate limiting will use in-memory fallback (NOT suitable for multi-instance production)"
+        "UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN not set — rate limiting will use in-memory fallback (resets on every deploy, NOT suitable for multi-instance production). Set both vars to enable Redis-backed rate limiting."
       );
     }
     if (!process.env.MPESA_CALLBACK_SECRET) {
@@ -96,6 +96,11 @@ export function validateEnv(): { valid: boolean; errors: string[]; warnings: str
     if (!process.env.RESEND_API_KEY) {
       warnings.push(
         "RESEND_API_KEY not set — email delivery will be disabled"
+      );
+    }
+    if (process.env.RESEND_API_KEY && !process.env.RESEND_FROM_EMAIL) {
+      warnings.push(
+        "RESEND_FROM_EMAIL not set — falling back to documents@invopap.com which must be a verified domain in your Resend account, or all emails will return 422 errors"
       );
     }
   }
