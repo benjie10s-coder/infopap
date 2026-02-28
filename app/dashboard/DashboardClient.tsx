@@ -123,7 +123,7 @@ export function DashboardClient({
                   </div>
 
                   {/* Amount */}
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     {doc.amount > 0 ? (
                       <p className="text-sm font-medium text-ink">
                         {formatCurrency(doc.amount, doc.currency)}
@@ -132,12 +132,13 @@ export function DashboardClient({
                       <p className="text-sm text-ink/30">—</p>
                     )}
                     <span
-                      className={`text-[10px] ${
+                      className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
                         doc.isPaid
-                          ? "text-green-600"
-                          : "text-amber-600"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-amber-100 text-amber-700"
                       }`}
                     >
+                      <span className={`h-1.5 w-1.5 rounded-full ${doc.isPaid ? "bg-green-500" : "bg-amber-500"}`} />
                       {doc.isPaid ? "Paid" : "Unpaid"}
                     </span>
                   </div>

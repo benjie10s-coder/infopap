@@ -1,12 +1,17 @@
 // app/view/cs/[publicId]/PublicCashSaleView.tsx — Client-side public cash sale viewer
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import type { CashSaleWithItems } from "@/lib/db/types";
 import { CashSalePdf } from "@/lib/pdf-components/cash-sale";
 import { PdfPreview } from "@/components/PdfPreview";
 import { PaymentModal } from "@/components/PaymentModal";
 import { ShareModal } from "@/components/ShareModal";
+import { BackButton } from "@/components/BackButton";
+import { ViewActionsSidebar } from "@/components/ViewActionsSidebar";
+import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
+import { UserNav } from "@/components/UserNav";
+import Link from "next/link";
 
 interface CashSaleData {
   id: string;
@@ -61,10 +66,14 @@ interface CashSaleData {
   userId: string | null;
 }
 
+type ViewUser = { displayName: string; email: string; avatarUrl: string | null } | null;
+
 export function PublicCashSaleView({
   cashSale: cs,
+  user,
 }: {
   cashSale: CashSaleData;
+  user: ViewUser;
 }) {
   const [showPayment, setShowPayment] = useState(false);
   const [showShare, setShowShare] = useState(false);
@@ -139,67 +148,86 @@ export function PublicCashSaleView({
     })),
   }), [cs]);
 
-  const handleDownload = useCallback(() => {
-    if (!cs.isPaid) {
-      setShowPayment(true);
-      return;
-    }
-    // Paid — show share options
-    setShowShare(true);
-  }, [cs.isPaid]);
-
-  const handlePaymentSuccess = useCallback(() => {
+  function handlePaymentSuccess() {
     setShowPayment(false);
-    // Show share modal after successful payment
     setShowShare(true);
-  }, []);
+  }
 
   return (
     <div className="min-h-screen bg-mist/30">
-      {/* Top bar */}
-      <header className="bg-white border-b border-mist">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-6 py-4">
-          <span className="text-lg font-display font-bold text-lagoon">
-            Invopap
-          </span>
-          <button
-            onClick={handleDownload}
-            className="rounded-lg bg-ember px-4 py-2 text-sm font-medium text-white hover:bg-ember/90 transition-colors flex items-center gap-2"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            {cs.isPaid ? "Download / Share" : "Download PDF (KSh 10)"}
-          </button>
+      {/* Sticky header — consistent with the rest of the site */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-mist">
+        <div className="flex items-center justify-between px-4 h-14">
+          <div className="flex items-center gap-2">
+            <BackButton />
+            <Link href="/" className="text-xl font-display font-bold text-lagoon">
+              Invopap
+            </Link>
+          </div>
+          <div className="flex items-center gap-2">
+            {user ? (
+              <UserNav user={user} />
+            ) : (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="text-sm text-ink/60 hover:text-ink transition-colors hidden sm:inline"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="rounded-lg bg-lagoon px-4 py-2 text-sm font-medium text-white hover:bg-lagoon/90 transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Cash Sale */}
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <PdfPreview document={<CashSalePdf cashSale={cashSaleRecord} showWatermark={!cs.isPaid} />} />
+      {/* Left nav rail — authenticated users only */}
+      {user && <NarrowSidebarRail />}
 
-        {/* Footer */}
-        <div className="text-center py-6">
-          <p className="text-xs text-ink/30">
-            Created with{" "}
-            <a
-              href="/"
-              className="text-lagoon hover:underline"
-              target="_blank"
-            >
-              Invopap
-            </a>
-          </p>
+      {/* Right actions sidebar */}
+      <ViewActionsSidebar
+        isPaid={cs.isPaid}
+        onPay={() => setShowPayment(true)}
+        onShare={() => setShowShare(true)}
+      />
+
+      {/* Document content */}
+      <div className={`${user ? "pl-14" : ""} lg:pr-64`}>
+        <div className="max-w-3xl mx-auto px-4 py-8">
+          <PdfPreview document={<CashSalePdf cashSale={cashSaleRecord} showWatermark={!cs.isPaid} />} />
+
+          {/* Mobile action bar */}
+          <div className="lg:hidden flex gap-3 mt-6">
+            {cs.isPaid ? (
+              <button
+                onClick={() => setShowShare(true)}
+                className="flex-1 rounded-lg bg-ember px-4 py-3 text-sm font-medium text-white hover:bg-ember/90 transition-colors"
+              >
+                Download / Share
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowPayment(true)}
+                className="flex-1 rounded-lg bg-ember px-4 py-3 text-sm font-medium text-white hover:bg-ember/90 transition-colors"
+              >
+                Download PDF — KSh 10
+              </button>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="text-center text-xs text-ink/30 py-6">
+            Powered by{" "}
+            <a href="/" className="text-lagoon hover:underline">Invopap</a>{" "}
+            · <a href="/terms" className="hover:underline">Terms</a>{" "}
+            · <a href="/privacy" className="hover:underline">Privacy</a>
+          </div>
         </div>
       </div>
 
