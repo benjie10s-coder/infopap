@@ -7,7 +7,6 @@ import { ReceiptPdf } from "@/lib/pdf-components/receipt";
 import { PdfPreview } from "@/components/PdfPreview";
 import { PaymentModal } from "@/components/PaymentModal";
 import { ShareModal } from "@/components/ShareModal";
-import { BackButton } from "@/components/BackButton";
 import { ViewActionsSidebar } from "@/components/ViewActionsSidebar";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 import { UserNav } from "@/components/UserNav";
@@ -127,7 +126,6 @@ export function PublicReceiptView({
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-mist">
         <div className="flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-2">
-            <BackButton />
             <Link href="/" className="text-xl font-display font-bold text-lagoon">
               Invopap
             </Link>
