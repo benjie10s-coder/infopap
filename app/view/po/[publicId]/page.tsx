@@ -41,7 +41,7 @@ export default async function PublicPurchaseOrderPage({ params }: Props) {
         .eq("externalId", authUser.id)
         .single();
       if (dbUser) {
-        user = { displayName: dbUser.name, email: dbUser.email, avatarUrl: dbUser.avatarUrl };
+        user = { displayName: dbUser.name ?? "", email: dbUser.email ?? "", avatarUrl: dbUser.avatarUrl };
       }
     }
   } catch {
