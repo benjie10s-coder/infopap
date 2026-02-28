@@ -39,12 +39,12 @@ const DOC_TYPE_BADGE: Record<string, string> = {
 // Map document type to download URL
 function getDownloadUrl(docType: PaidDocRow["docType"], publicId: string): string {
   const paths: Record<PaidDocRow["docType"], string> = {
-    invoice: `/api/invoices/download/${publicId}`,
-    "cash-sale": `/api/cash-sales/download-cs/${publicId}`,
-    "delivery-note": `/api/delivery-notes/download-dn/${publicId}`,
-    receipt: `/api/receipts/download-receipt/${publicId}`,
-    "purchase-order": `/api/purchase-orders/download-po/${publicId}`,
-    quotation: `/api/quotations/download-quotation/${publicId}`,
+    invoice: `/api/documents/download/${publicId}`,
+    "cash-sale": `/api/documents/download-cs/${publicId}`,
+    "delivery-note": `/api/documents/download-dn/${publicId}`,
+    receipt: `/api/documents/download-receipt/${publicId}`,
+    "purchase-order": `/api/documents/download-po/${publicId}`,
+    quotation: `/api/documents/download-quotation/${publicId}`,
   };
   return paths[docType];
 }
