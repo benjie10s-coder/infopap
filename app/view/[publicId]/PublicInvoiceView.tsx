@@ -211,16 +211,16 @@ export function PublicInvoiceView({
               </button>
             )}
           </div>
-
-          {/* Footer */}
-          <div className="text-center text-xs text-ink/30 py-6">
-            Powered by{" "}
-            <a href="/" className="text-lagoon hover:underline">Invopap</a>{" "}
-            · <a href="/terms" className="hover:underline">Terms</a>{" "}
-            · <a href="/privacy" className="hover:underline">Privacy</a>
-          </div>
         </div>
       </div>
+
+      {/* Footer — full width, outside the sidebar-padded area */}
+      <footer className="text-center text-xs text-ink/30 py-6 border-t border-mist">
+        Powered by{" "}
+        <a href="/" className="text-lagoon hover:underline">Invopap</a>{" "}
+        · <a href="/terms" className="hover:underline">Terms</a>{" "}
+        · <a href="/privacy" className="hover:underline">Privacy</a>
+      </footer>
 
       {/* Payment modal */}
       {showPayment && (
