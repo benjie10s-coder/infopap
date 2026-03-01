@@ -10,7 +10,6 @@ import { QuotationPreview } from "@/components/QuotationPreview";
 import { QuotationOptionsSidebar } from "@/components/QuotationOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
-import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 
 export function QuotationEditor() {
@@ -216,13 +215,6 @@ export function QuotationEditor() {
               </button>
             </div>
           </div>
-
-          {/* Row 2: Document Type Selector */}
-          <div className="pb-2 -mx-1">
-            <DocumentTypeSwitcher variant="header" fallbackLabel="Quotation" />
-          </div>
-        </div>
-      </header>
 
       {/* Narrow sidebar rail for logged-in users */}
       {user && <NarrowSidebarRail />}

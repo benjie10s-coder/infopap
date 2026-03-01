@@ -10,7 +10,6 @@ import { CashSalePreview } from "@/components/CashSalePreview";
 import { CashSaleOptionsSidebar } from "@/components/CashSaleOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
-import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 
 export function CashSaleEditor() {
@@ -217,11 +216,6 @@ export function CashSaleEditor() {
               </svg>
             </button>
           </div>
-          </div>
-
-          {/* Row 2: Document Type Selector */}
-          <div className="pb-2 -mx-1">
-            <DocumentTypeSwitcher variant="header" fallbackLabel="Cash Sale" />
           </div>
         </div>
       </header>

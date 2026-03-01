@@ -10,7 +10,6 @@ import { ReceiptPreview } from "@/components/ReceiptPreview";
 import { ReceiptOptionsSidebar } from "@/components/ReceiptOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
-import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 
 export function ReceiptEditor() {
@@ -207,10 +206,6 @@ export function ReceiptEditor() {
                 </svg>
               </button>
             </div>
-          </div>
-
-          <div className="pb-2 -mx-1">
-            <DocumentTypeSwitcher variant="header" fallbackLabel="Receipt" />
           </div>
         </div>
       </header>

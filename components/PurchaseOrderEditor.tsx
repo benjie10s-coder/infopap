@@ -10,7 +10,6 @@ import { PurchaseOrderPreview } from "@/components/PurchaseOrderPreview";
 import { PurchaseOrderOptionsSidebar } from "@/components/PurchaseOrderOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
-import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 
 export function PurchaseOrderEditor() {
@@ -219,10 +218,6 @@ export function PurchaseOrderEditor() {
                 </svg>
               </button>
             </div>
-          </div>
-
-          <div className="pb-2 -mx-1">
-            <DocumentTypeSwitcher variant="header" fallbackLabel="Purchase Order" />
           </div>
         </div>
       </header>

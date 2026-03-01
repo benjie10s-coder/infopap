@@ -10,7 +10,6 @@ import { DeliveryNotePreview } from "@/components/DeliveryNotePreview";
 import { DeliveryNoteOptionsSidebar } from "@/components/DeliveryNoteOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
-import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 
 export function DeliveryNoteEditor() {
@@ -209,11 +208,6 @@ export function DeliveryNoteEditor() {
                 </svg>
               </button>
             </div>
-          </div>
-
-          {/* Row 2: Document Type Selector */}
-          <div className="pb-2 -mx-1">
-            <DocumentTypeSwitcher variant="header" fallbackLabel="Delivery Note" />
           </div>
         </div>
       </header>

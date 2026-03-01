@@ -10,7 +10,6 @@ import { InvoicePreview } from "@/components/InvoicePreview";
 import { OptionsSidebar } from "@/components/OptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
-import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 
 export function InvoiceEditor() {
@@ -220,11 +219,6 @@ export function InvoiceEditor() {
                 </svg>
               </button>
             </div>
-          </div>
-
-          {/* Row 2: Document Type Selector */}
-          <div className="pb-2 -mx-1">
-            <DocumentTypeSwitcher variant="header" fallbackLabel="Invoice" />
           </div>
         </div>
       </header>
