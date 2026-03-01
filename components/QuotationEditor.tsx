@@ -215,6 +215,8 @@ export function QuotationEditor() {
               </button>
             </div>
           </div>
+        </div>
+      </header>
 
       {/* Narrow sidebar rail for logged-in users */}
       {user && <NarrowSidebarRail />}
