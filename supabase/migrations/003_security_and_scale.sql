@@ -41,18 +41,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_user_updated_at ON "User";
 CREATE TRIGGER trg_user_updated_at
   BEFORE UPDATE ON "User"
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS trg_invoice_updated_at ON "Invoice";
 CREATE TRIGGER trg_invoice_updated_at
   BEFORE UPDATE ON "Invoice"
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS trg_lineitem_updated_at ON "LineItem";
 CREATE TRIGGER trg_lineitem_updated_at
   BEFORE UPDATE ON "LineItem"
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS trg_payment_updated_at ON "Payment";
 CREATE TRIGGER trg_payment_updated_at
   BEFORE UPDATE ON "Payment"
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

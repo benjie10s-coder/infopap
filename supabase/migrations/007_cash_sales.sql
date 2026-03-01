@@ -139,14 +139,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS "CashSale_updatedAt" ON "CashSale";
 CREATE TRIGGER "CashSale_updatedAt"
   BEFORE UPDATE ON "CashSale"
   FOR EACH ROW EXECUTE FUNCTION update_cash_sale_updated_at();
 
+DROP TRIGGER IF EXISTS "CashSaleLineItem_updatedAt" ON "CashSaleLineItem";
 CREATE TRIGGER "CashSaleLineItem_updatedAt"
   BEFORE UPDATE ON "CashSaleLineItem"
   FOR EACH ROW EXECUTE FUNCTION update_cash_sale_updated_at();
 
+DROP TRIGGER IF EXISTS "CashSalePayment_updatedAt" ON "CashSalePayment";
 CREATE TRIGGER "CashSalePayment_updatedAt"
   BEFORE UPDATE ON "CashSalePayment"
   FOR EACH ROW EXECUTE FUNCTION update_cash_sale_updated_at();

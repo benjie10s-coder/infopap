@@ -160,14 +160,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS "PurchaseOrder_updatedAt" ON "PurchaseOrder";
 CREATE TRIGGER "PurchaseOrder_updatedAt"
   BEFORE UPDATE ON "PurchaseOrder"
   FOR EACH ROW EXECUTE FUNCTION update_purchase_order_updated_at();
 
+DROP TRIGGER IF EXISTS "PurchaseOrderLineItem_updatedAt" ON "PurchaseOrderLineItem";
 CREATE TRIGGER "PurchaseOrderLineItem_updatedAt"
   BEFORE UPDATE ON "PurchaseOrderLineItem"
   FOR EACH ROW EXECUTE FUNCTION update_purchase_order_updated_at();
 
+DROP TRIGGER IF EXISTS "PurchaseOrderPayment_updatedAt" ON "PurchaseOrderPayment";
 CREATE TRIGGER "PurchaseOrderPayment_updatedAt"
   BEFORE UPDATE ON "PurchaseOrderPayment"
   FOR EACH ROW EXECUTE FUNCTION update_purchase_order_updated_at();

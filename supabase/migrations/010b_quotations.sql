@@ -134,14 +134,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS "Quotation_updatedAt" ON "Quotation";
 CREATE TRIGGER "Quotation_updatedAt"
   BEFORE UPDATE ON "Quotation"
   FOR EACH ROW EXECUTE FUNCTION update_quotation_updated_at();
 
+DROP TRIGGER IF EXISTS "QuotationLineItem_updatedAt" ON "QuotationLineItem";
 CREATE TRIGGER "QuotationLineItem_updatedAt"
   BEFORE UPDATE ON "QuotationLineItem"
   FOR EACH ROW EXECUTE FUNCTION update_quotation_updated_at();
 
+DROP TRIGGER IF EXISTS "QuotationPayment_updatedAt" ON "QuotationPayment";
 CREATE TRIGGER "QuotationPayment_updatedAt"
   BEFORE UPDATE ON "QuotationPayment"
   FOR EACH ROW EXECUTE FUNCTION update_quotation_updated_at();

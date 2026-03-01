@@ -127,14 +127,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS "DeliveryNote_updatedAt" ON "DeliveryNote";
 CREATE TRIGGER "DeliveryNote_updatedAt"
   BEFORE UPDATE ON "DeliveryNote"
   FOR EACH ROW EXECUTE FUNCTION update_delivery_note_updated_at();
 
+DROP TRIGGER IF EXISTS "DeliveryNoteLineItem_updatedAt" ON "DeliveryNoteLineItem";
 CREATE TRIGGER "DeliveryNoteLineItem_updatedAt"
   BEFORE UPDATE ON "DeliveryNoteLineItem"
   FOR EACH ROW EXECUTE FUNCTION update_delivery_note_updated_at();
 
+DROP TRIGGER IF EXISTS "DeliveryNotePayment_updatedAt" ON "DeliveryNotePayment";
 CREATE TRIGGER "DeliveryNotePayment_updatedAt"
   BEFORE UPDATE ON "DeliveryNotePayment"
   FOR EACH ROW EXECUTE FUNCTION update_delivery_note_updated_at();
