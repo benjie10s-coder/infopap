@@ -10,6 +10,7 @@ import { CashSalePreview } from "@/components/CashSalePreview";
 import { CashSaleOptionsSidebar } from "@/components/CashSaleOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
+import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 
 export function CashSaleEditor() {

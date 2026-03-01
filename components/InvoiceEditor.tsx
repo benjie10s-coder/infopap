@@ -10,6 +10,7 @@ import { InvoicePreview } from "@/components/InvoicePreview";
 import { OptionsSidebar } from "@/components/OptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
+import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 
 export function InvoiceEditor() {

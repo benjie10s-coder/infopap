@@ -10,6 +10,7 @@ import { QuotationPreview } from "@/components/QuotationPreview";
 import { QuotationOptionsSidebar } from "@/components/QuotationOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
+import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 
 export function QuotationEditor() {
