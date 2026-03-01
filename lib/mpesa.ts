@@ -85,6 +85,28 @@ function getCallbackUrl(): string {
   return `${appUrl}/api/payments/callback${tokenQuery}`;
 }
 
+/**
+ * Generate a Daraja-compatible timestamp (YYYYMMDDHHmmss) in Africa/Nairobi timezone.
+ * Safaricom requires the timestamp to be in EAT (UTC+3) — using the server's
+ * local time (UTC on Railway) produces a wrong password and causes 500 errors.
+ */
+function getNairobiTimestamp(): string {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Nairobi",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(new Date());
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)!.value;
+  return `${get("year")}${get("month")}${get("day")}${get("hour")}${get("minute")}${get("second")}`;
+}
+
 // =============================================================================
 // Access Token (cached)
 // =============================================================================
@@ -115,7 +137,7 @@ async function getAccessToken(): Promise<string> {
       const response = await fetch(url, {
         method: "GET",
         headers: { Authorization: `Basic ${auth}` },
-        signal: AbortSignal.timeout(20_000),
+        signal: AbortSignal.timeout(10_000),
       });
 
       if (!response.ok) {
@@ -187,15 +209,8 @@ export async function initiateSTKPush(
   const shortcode = process.env.MPESA_SHORTCODE!;
   const passkey = process.env.MPESA_PASSKEY!;
 
-  // Generate timestamp: YYYYMMDDHHmmss
-  const now = new Date();
-  const timestamp =
-    now.getFullYear().toString() +
-    String(now.getMonth() + 1).padStart(2, "0") +
-    String(now.getDate()).padStart(2, "0") +
-    String(now.getHours()).padStart(2, "0") +
-    String(now.getMinutes()).padStart(2, "0") +
-    String(now.getSeconds()).padStart(2, "0");
+  // Generate timestamp in Africa/Nairobi timezone (required by Safaricom Daraja API)
+  const timestamp = getNairobiTimestamp();
 
   // Generate password: Base64(Shortcode + Passkey + Timestamp)
   const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString("base64");
@@ -236,7 +251,7 @@ export async function initiateSTKPush(
             "Content-Type": "application/json",
           },
           body: JSON.stringify(body),
-          signal: AbortSignal.timeout(30_000),
+          signal: AbortSignal.timeout(20_000),
         }
       );
 
@@ -296,14 +311,8 @@ export async function querySTKPush(
   const shortcode = process.env.MPESA_SHORTCODE!;
   const passkey = process.env.MPESA_PASSKEY!;
 
-  const now = new Date();
-  const timestamp =
-    now.getFullYear().toString() +
-    String(now.getMonth() + 1).padStart(2, "0") +
-    String(now.getDate()).padStart(2, "0") +
-    String(now.getHours()).padStart(2, "0") +
-    String(now.getMinutes()).padStart(2, "0") +
-    String(now.getSeconds()).padStart(2, "0");
+  // Generate timestamp in Africa/Nairobi timezone (required by Safaricom Daraja API)
+  const timestamp = getNairobiTimestamp();
 
   const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString("base64");
 
@@ -321,7 +330,7 @@ export async function querySTKPush(
         Timestamp: timestamp,
         CheckoutRequestID: checkoutRequestId,
       }),
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(20_000),
     }
   );
 
