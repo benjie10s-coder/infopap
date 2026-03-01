@@ -121,10 +121,12 @@ CREATE INDEX IF NOT EXISTS "DocumentEmailLog_documentType_documentId_idx"
 ALTER TABLE "DocumentEmailLog" ENABLE ROW LEVEL SECURITY;
 
 -- Service role can do everything
+DROP POLICY IF EXISTS "DocumentEmailLog_service_all" ON "DocumentEmailLog";
 CREATE POLICY "DocumentEmailLog_service_all" ON "DocumentEmailLog"
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- Users can read their own email logs
+DROP POLICY IF EXISTS "DocumentEmailLog_auth_read" ON "DocumentEmailLog";
 CREATE POLICY "DocumentEmailLog_auth_read" ON "DocumentEmailLog"
   FOR SELECT TO authenticated
   USING (
