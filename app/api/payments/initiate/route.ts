@@ -115,8 +115,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Look up document by type
+    logger.info("payment_resolve_document", { documentType, publicId });
     const { document, createPayment, updateToProcessing } = await resolveDocument(documentType, publicId);
     if (!document) {
+      logger.error("payment_document_not_found", { documentType, publicId });
       return NextResponse.json(
         { error: "Document not found" },
         { status: 404 }
@@ -143,6 +145,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (!paymentResult.success) {
+      logger.error("payment_rpc_failed", {
+        documentType,
+        publicId,
+        error: paymentResult.error,
+        code: paymentResult.code,
+        docId: document.id,
+      });
       const status = paymentResult.code === "PAYMENT_IN_PROGRESS" ? 409 : 400;
       return NextResponse.json(
         { error: paymentResult.error, code: paymentResult.code },
@@ -189,7 +198,10 @@ export async function POST(request: NextRequest) {
 
     const errMsg = error instanceof Error ? error.message : "Unknown error";
 
-    logger.error("payment_initiate_error", { error: errMsg });
+    logger.error("payment_initiate_error", {
+      error: errMsg,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
     // Phone number validation errors → 400
     if (errMsg.includes("Invalid phone number")) {
