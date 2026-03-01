@@ -17,11 +17,30 @@ const EDITOR_ROUTES = [
   "/receipt",
 ];
 
+// Public API routes that don't need Supabase session refresh.
+// Payment routes use publicId (no user session), and public status/document
+// routes are polled frequently — skipping getUser() saves 50-200ms per request.
+const PUBLIC_API_PREFIXES = [
+  "/api/payments/",         // initiate, query, callback
+  "/api/invoices/public/",
+  "/api/cash-sales/public/",
+  "/api/delivery-notes/public/",
+  "/api/receipts/public/",
+  "/api/purchase-orders/public/",
+  "/api/quotations/public/",
+  "/api/documents/",        // public download routes
+  "/view/",                 // public document view pages
+];
+
 function isEditorRoute(pathname: string): boolean {
   // Exact match for home "/"
   if (pathname === "/") return true;
   // Exact match for editor routes (not their sub-routes like /api/cash-sales)
   return EDITOR_ROUTES.some((route) => pathname === route);
+}
+
+function isPublicRoute(pathname: string): boolean {
+  return PUBLIC_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
 export async function middleware(request: NextRequest) {
@@ -58,7 +77,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 3. Refresh Supabase session for all other routes (API, dashboard, auth, etc.)
+  // 3. Skip session refresh for public/payment routes (saves 50-200ms per request)
+  //    These routes authenticate via publicId, not user sessions.
+  //    At scale (500+ payments/day), this eliminates thousands of unnecessary
+  //    Supabase auth.getUser() calls from polling and payment initiation.
+  if (isPublicRoute(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
+  // 4. Refresh Supabase session for all other routes (API, dashboard, auth, etc.)
   return await updateSession(request);
 }
 

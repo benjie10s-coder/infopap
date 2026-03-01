@@ -44,7 +44,7 @@ export function PaymentModal({ publicId, onClose, onSuccess, documentType = "INV
 
     let cancelled = false;
     let pollCount = 0;
-    const maxPolls = 30; // 30 × 3s = 90s max
+    const maxPolls = 24; // 24 × 5s = 120s max
 
     const poll = async () => {
       if (cancelled || pollCount >= maxPolls) {
@@ -83,8 +83,11 @@ export function PaymentModal({ publicId, onClose, onSuccess, documentType = "INV
           return;
         }
 
-        // Also try explicit Daraja query every 5th poll
-        if (pollCount % 5 === 0) {
+        // Query Daraja directly every 8th poll (~40s) as a fallback.
+        // Most payments resolve via the callback → status poll path.
+        // Reducing from every 5th to every 8th cuts Safaricom API calls
+        // by ~50% — critical at 500+ payments/day.
+        if (pollCount % 8 === 0) {
           try {
             const queryRes = await fetch("/api/payments/query", {
               method: "POST",
@@ -110,11 +113,12 @@ export function PaymentModal({ publicId, onClose, onSuccess, documentType = "INV
       }
 
       if (!cancelled) {
-        setTimeout(poll, 3000);
+        setTimeout(poll, 5000);
       }
     };
 
-    const timeout = setTimeout(poll, 3000);
+    // First poll after 4s — gives STK time to arrive on the phone
+    const timeout = setTimeout(poll, 4000);
     return () => {
       cancelled = true;
       clearTimeout(timeout);

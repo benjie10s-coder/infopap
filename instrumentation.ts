@@ -1,4 +1,4 @@
-// instrumentation.ts — Env validation on startup + graceful shutdown
+// instrumentation.ts — Env validation on startup + graceful shutdown + M-Pesa token pre-warm
 import { validateEnv } from "@/lib/env";
 import { log } from "@/lib/logger";
 
@@ -33,6 +33,12 @@ export async function register() {
     mpesaEnabled: !!(process.env.MPESA_CONSUMER_KEY),
     redisEnabled: !!(process.env.UPSTASH_REDIS_REST_URL),
   });
+
+  // Pre-warm M-Pesa access token so the first payment after deploy
+  // doesn't eat a 300-2000ms token fetch. Runs async, non-blocking.
+  if (process.env.MPESA_CONSUMER_KEY && process.env.MPESA_CONSUMER_SECRET) {
+    import("@/lib/mpesa").then((mpesa) => mpesa.warmUpAccessToken());
+  }
 
   // Graceful shutdown handler (Node.js runtime only, not Edge)
   if (typeof process !== "undefined" && typeof process.on === "function") {

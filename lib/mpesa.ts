@@ -131,13 +131,13 @@ async function getAccessToken(): Promise<string> {
 
   let lastError: Error | null = null;
 
-  // 2 retries with exponential backoff
+  // 2 retries with exponential backoff (6s timeout — OAuth is lightweight)
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const response = await fetch(url, {
         method: "GET",
         headers: { Authorization: `Basic ${auth}` },
-        signal: AbortSignal.timeout(10_000),
+        signal: AbortSignal.timeout(6_000),
       });
 
       if (!response.ok) {
@@ -152,6 +152,11 @@ async function getAccessToken(): Promise<string> {
         expiresAt: Date.now() + expiresIn,
       };
 
+      log("info", "mpesa_token_cached", {
+        expiresInSec: Math.floor(expiresIn / 1000),
+        attempt,
+      });
+
       return data.access_token;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error("Unknown error");
@@ -162,6 +167,23 @@ async function getAccessToken(): Promise<string> {
   }
 
   throw lastError || new Error("Failed to get M-Pesa access token");
+}
+
+/**
+ * Pre-warm the access token cache. Called at server startup to avoid
+ * the first payment request eating a 300-2000ms token fetch.
+ * Fails silently — if credentials aren't configured, no harm done.
+ */
+export async function warmUpAccessToken(): Promise<void> {
+  try {
+    await getAccessToken();
+    log("info", "mpesa_token_prewarmed", { cached: !!cachedToken });
+  } catch {
+    // Non-fatal — token will be fetched on first payment request
+    log("warn", "mpesa_token_prewarm_failed", {
+      message: "Will fetch on first payment request",
+    });
+  }
 }
 
 // =============================================================================
@@ -251,7 +273,7 @@ export async function initiateSTKPush(
             "Content-Type": "application/json",
           },
           body: JSON.stringify(body),
-          signal: AbortSignal.timeout(20_000),
+          signal: AbortSignal.timeout(12_000),
         }
       );
 
@@ -330,7 +352,7 @@ export async function querySTKPush(
         Timestamp: timestamp,
         CheckoutRequestID: checkoutRequestId,
       }),
-      signal: AbortSignal.timeout(20_000),
+      signal: AbortSignal.timeout(12_000),
     }
   );
 
