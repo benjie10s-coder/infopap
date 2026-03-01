@@ -2,11 +2,12 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
+import { getGuestSessionId } from "@/lib/session";
 import { DocumentLibraryClient } from "./DocumentLibraryClient";
 
 export const metadata = {
   title: "Document Library — Invopap",
-  description: "Access all your paid documents for download and sharing",
+  description: "Access all your documents for download and sharing",
 };
 
 export default async function DocumentLibraryPage() {
@@ -30,46 +31,45 @@ export default async function DocumentLibraryPage() {
     redirect("/auth/login");
   }
 
-  // Fetch ONLY paid documents from all 6 tables in parallel
+  // Fetch all documents from all 6 tables in parallel
+  // Also include any documents the user created before signing up (guestSessionId)
   const selectCols = "id, publicId, toName, isPaid, createdAt";
+  const guestSessionId = getGuestSessionId();
+  const ownerFilter = guestSessionId
+    ? `userId.eq.${dbUser.id},guestSessionId.eq.${guestSessionId}`
+    : `userId.eq.${dbUser.id}`;
 
   const [invoices, cashSales, deliveryNotes, receipts, purchaseOrders, quotations] =
     await Promise.all([
       admin
         .from("Invoice")
         .select(`${selectCols}, invoiceNumber, documentType, total, currency`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
       admin
         .from("CashSale")
         .select(`${selectCols}, cashSaleNumber, total, currency`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
       admin
         .from("DeliveryNote")
         .select(`${selectCols}, deliveryNoteNumber`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
       admin
         .from("Receipt")
         .select(`${selectCols}, receiptNumber, amountReceived, currency`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
       admin
         .from("PurchaseOrder")
         .select(`${selectCols}, purchaseOrderNumber, total, currency`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
       admin
         .from("Quotation")
         .select(`${selectCols}, quotationNumber, total, currency`)
-        .eq("userId", dbUser.id)
-        .eq("isPaid", true)
+        .or(ownerFilter)
         .order("createdAt", { ascending: false }),
     ]);
 
@@ -83,6 +83,7 @@ export default async function DocumentLibraryPage() {
     toName: string;
     amount: number;
     currency: string;
+    isPaid: boolean;
     createdAt: string;
     viewUrl: string;
   };
@@ -99,6 +100,7 @@ export default async function DocumentLibraryPage() {
       toName: inv.toName || "",
       amount: inv.total || 0,
       currency: inv.currency || "KES",
+      isPaid: inv.isPaid,
       createdAt: inv.createdAt,
       viewUrl: `/view/${inv.publicId}`,
     });
@@ -113,6 +115,7 @@ export default async function DocumentLibraryPage() {
       toName: cs.toName || "",
       amount: cs.total || 0,
       currency: cs.currency || "KES",
+      isPaid: cs.isPaid,
       createdAt: cs.createdAt,
       viewUrl: `/view/cs/${cs.publicId}`,
     });
@@ -127,6 +130,7 @@ export default async function DocumentLibraryPage() {
       toName: dn.toName || "",
       amount: 0,
       currency: "KES",
+      isPaid: dn.isPaid,
       createdAt: dn.createdAt,
       viewUrl: `/view/dn/${dn.publicId}`,
     });
@@ -141,6 +145,7 @@ export default async function DocumentLibraryPage() {
       toName: r.toName || "",
       amount: r.amountReceived || 0,
       currency: r.currency || "KES",
+      isPaid: r.isPaid,
       createdAt: r.createdAt,
       viewUrl: `/view/receipt/${r.publicId}`,
     });
@@ -155,6 +160,7 @@ export default async function DocumentLibraryPage() {
       toName: po.toName || "",
       amount: po.total || 0,
       currency: po.currency || "KES",
+      isPaid: po.isPaid,
       createdAt: po.createdAt,
       viewUrl: `/view/po/${po.publicId}`,
     });
@@ -169,6 +175,7 @@ export default async function DocumentLibraryPage() {
       toName: q.toName || "",
       amount: q.total || 0,
       currency: q.currency || "KES",
+      isPaid: q.isPaid,
       createdAt: q.createdAt,
       viewUrl: `/view/quotation/${q.publicId}`,
     });

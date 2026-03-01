@@ -3,6 +3,8 @@ import { getCashSaleByPublicId } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { PublicCashSaleView } from "./PublicCashSaleView";
 import type { Metadata } from "next";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/admin";
 
 interface Props {
   params: { publicId: string };
@@ -26,5 +28,25 @@ export default async function PublicCashSalePage({ params }: Props) {
     notFound();
   }
 
-  return <PublicCashSaleView cashSale={sale} />;
+  // Optional auth — no redirect if unauthenticated
+  let user: { displayName: string; email: string; avatarUrl: string | null } | null = null;
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      const admin = getAdminClient();
+      const { data: dbUser } = await admin
+        .from("User")
+        .select("name, email, avatarUrl")
+        .eq("externalId", authUser.id)
+        .single();
+      if (dbUser) {
+        user = { displayName: dbUser.name ?? "", email: dbUser.email ?? "", avatarUrl: dbUser.avatarUrl };
+      }
+    }
+  } catch {
+    // unauthenticated — public view
+  }
+
+  return <PublicCashSaleView cashSale={sale} user={user} />;
 }

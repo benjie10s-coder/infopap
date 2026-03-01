@@ -1,6 +1,6 @@
 // app/api/documents/download/[publicId]/route.ts — PDF download 
 import { NextRequest, NextResponse } from "next/server";
-import { getInvoiceByPublicId, consumeInvoiceDownload } from "@/lib/db";
+import { getInvoiceByPublicId } from "@/lib/db";
 import { renderInvoicePdf } from "@/lib/pdf";
 import { checkRateLimit, publicReadLimiter } from "@/lib/rate-limit";
 import { createRequestLogger } from "@/lib/logger";
@@ -25,16 +25,15 @@ export async function GET(
       );
     }
 
-    // Atomic claim: flip isPaid from true to false, returns false if already consumed
-    const claimed = await consumeInvoiceDownload(invoice.id);
-    if (!claimed) {
+    // Verify payment — do not consume/destroy isPaid so re-downloads are always allowed
+    if (!invoice.isPaid) {
       return NextResponse.json(
         { error: "Payment required", publicId: params.publicId },
         { status: 402 }
       );
     }
 
-    // Generate PDF (isPaid is now false, no race condition possible)
+    // Generate PDF
     let pdfBuffer: Buffer;
     try {
       pdfBuffer = await renderInvoicePdf(invoice, { showWatermark: false });

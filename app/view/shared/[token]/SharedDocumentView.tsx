@@ -33,7 +33,7 @@ const DOCUMENT_TYPE_ICONS: Record<string, string> = {
 export function SharedDocumentView({
   token,
   documentType,
-  documentId,
+  documentId: _documentId,
   publicId,
   isGuestDocument,
   isPaid,

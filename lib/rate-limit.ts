@@ -1,4 +1,10 @@
 // lib/rate-limit.ts — Dual-mode rate limiter (Upstash Redis + in-memory fallback)
+//
+// PRODUCTION NOTE: In-memory rate limiting resets on every process restart/deploy
+// and is NOT shared across multiple instances. For production deployments, set both:
+//   UPSTASH_REDIS_REST_URL  and  UPSTASH_REDIS_REST_TOKEN
+// to enable the Redis-backed limiter which is persistent and instance-independent.
+// A missing or unreachable Redis will automatically fall back to in-memory (fail-open).
 import { log } from "@/lib/logger";
 
 // =============================================================================

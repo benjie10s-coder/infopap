@@ -1,10 +1,35 @@
 // app/auth/signup/page.tsx — Signup page (same as login since Google OAuth)
 "use client";
 
+import { useEffect, useState } from "react";
 import { AuthNav } from "@/components/AuthNav";
 import { createBrowserClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
+  const [pendingDocInfo, setPendingDocInfo] = useState<{
+    publicId: string;
+    documentType: string;
+  } | null>(null);
+
+  // On mount, check if there's a pending document save from guest mode
+  useEffect(() => {
+    const pending = localStorage.getItem("invopap_pending_save");
+    if (pending) {
+      try {
+        const parsed = JSON.parse(pending);
+        if (parsed.publicId && parsed.documentType) {
+          setPendingDocInfo(parsed);
+          // Set a short-lived cookie so the server-side OAuth callback can read it
+          document.cookie = `invopap_pending_doc=${encodeURIComponent(pending)}; path=/; max-age=600; SameSite=Lax`;
+        }
+      } catch {
+        // Invalid JSON — ignore
+      }
+      // Clear localStorage regardless
+      localStorage.removeItem("invopap_pending_save");
+    }
+  }, []);
+
   async function handleGoogleSignup() {
     const supabase = createBrowserClient();
     await supabase.auth.signInWithOAuth({
@@ -27,9 +52,20 @@ export default function SignupPage() {
               Create your account
             </h1>
             <p className="text-sm text-ink/50 mt-2">
-              Save invoices, track payments, and manage your business documents
+              {pendingDocInfo
+                ? "Sign up to save your document to your account"
+                : "Save invoices, track payments, and manage your business documents"}
             </p>
           </div>
+
+          {/* Pending document save banner */}
+          {pendingDocInfo && (
+            <div className="p-3 bg-lagoon/5 border border-lagoon/20 rounded-xl text-center">
+              <p className="text-sm text-lagoon font-medium">
+                Your document will be saved to your account after signing up
+              </p>
+            </div>
+          )}
 
           {/* Google button */}
           <button
@@ -75,7 +111,7 @@ export default function SignupPage() {
               <svg className="h-4 w-4 text-lagoon flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Guest invoices automatically migrated
+              Access your documents from any device
             </li>
           </ul>
 

@@ -10,7 +10,7 @@ export default function RefundPage() {
   return (
     <article className="prose prose-slate max-w-none">
       <h1>Refund Policy</h1>
-      <p className="text-sm text-ink/50">Last updated: {new Date().toLocaleDateString("en-KE")}</p>
+      <p className="text-sm text-ink/50">Last updated: 28 February 2026</p>
 
       <h2>Digital Goods</h2>
       <p>

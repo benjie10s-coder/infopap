@@ -10,7 +10,7 @@ import { QuotationPreview } from "@/components/QuotationPreview";
 import { QuotationOptionsSidebar } from "@/components/QuotationOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
-import { DocumentTypeSwitcher } from "@/components/DocumentTypeSwitcher";
+import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 
 export function QuotationEditor() {
   const store = useQuotationStore();
@@ -141,12 +141,14 @@ export function QuotationEditor() {
   return (
     <div className="min-h-screen bg-mist/30">
       {/* Top bar */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-mist safe-top">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-mist safe-top">
         <div className="max-w-[1400px] mx-auto px-3 sm:px-4">
           <div className="flex items-center justify-between h-12 sm:h-14">
-            <Link href="/" className="text-lg sm:text-xl font-display font-bold text-lagoon shrink-0">
-              Invopap
-            </Link>
+            <div className="flex items-center shrink-0">
+              <Link href="/" className="text-lg sm:text-xl font-display font-bold text-lagoon">
+                Invopap
+              </Link>
+            </div>
 
             {/* Center: Preview / Edit toggle */}
             <div className="flex items-center bg-mist/60 rounded-lg p-0.5">
@@ -221,7 +223,11 @@ export function QuotationEditor() {
         </div>
       </header>
 
+      {/* Narrow sidebar rail for logged-in users */}
+      {user && <NarrowSidebarRail />}
+
       {/* ─── Main content: 2-column layout ─── */}
+      <div className={user ? "pl-14" : ""}>
       <div className="max-w-[1400px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           {/* Left: Form or Preview */}
@@ -246,6 +252,7 @@ export function QuotationEditor() {
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/* ─── Options drawer (mobile) ─── */}

@@ -1,8 +1,8 @@
-// app/auth/callback/route.ts — Supabase OAuth callback with guest migration
+// app/auth/callback/route.ts — Supabase OAuth callback (no auto-migration)
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
-import { migrateGuestInvoices, clearGuestSession } from "@/lib/session";
+import { clearGuestSession, migrateSingleDocument, migrateAllGuestDocuments, getGuestSessionId } from "@/lib/session";
 import { createRequestLogger } from "@/lib/logger";
 import { cookies } from "next/headers";
 
@@ -68,25 +68,41 @@ export async function GET(request: NextRequest) {
       .eq("externalId", user.id)
       .single();
 
-    if (ourUser) {
-      // Migrate guest invoices to the authenticated user
-      const cookieStore = cookies();
-      const guestSessionId = cookieStore.get("invopap_guest_session")?.value;
+    if (!ourUser) {
+      // No app user record found — sign out the Supabase session so we don't
+      // land on a stale/wrong account's dashboard
+      await supabase.auth.signOut();
+      logger.error("auth_callback_no_user_record", { supabaseId: user.id, email: user.email });
+      return NextResponse.redirect(`${origin}/auth/login?error=account_not_found`);
+    }
 
-      if (guestSessionId) {
+    if (ourUser) {
+      // Check for a pending single-document save (set before OAuth redirect)
+      const cookieStore = cookies();
+      const pendingDocRaw = cookieStore.get("invopap_pending_doc")?.value;
+      const pendingDoc = pendingDocRaw
+        ? decodeURIComponent(pendingDocRaw)
+        : null;
+
+      if (pendingDoc) {
         try {
-          const migrated = await migrateGuestInvoices(
-            guestSessionId,
-            ourUser.id
-          );
-          if (migrated > 0) {
-            logger.info("guest_invoices_migrated", {
-              userId: ourUser.id,
-              count: migrated,
-            });
+          const { publicId, documentType } = JSON.parse(pendingDoc);
+          if (publicId && documentType) {
+            const migrated = await migrateSingleDocument(
+              publicId,
+              documentType,
+              ourUser.id
+            );
+            if (migrated) {
+              logger.info("guest_document_saved", {
+                userId: ourUser.id,
+                publicId,
+                documentType,
+              });
+            }
           }
         } catch (migrateError) {
-          logger.error("guest_migration_error", {
+          logger.error("pending_doc_migration_error", {
             error:
               migrateError instanceof Error
                 ? migrateError.message
@@ -94,9 +110,32 @@ export async function GET(request: NextRequest) {
           });
         }
 
-        // Clear guest session
-        clearGuestSession();
+        // Clear the pending doc cookie
+        try {
+          cookieStore.set("invopap_pending_doc", "", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 0,
+            path: "/",
+          });
+        } catch {
+          // Read-only context
+        }
       }
+
+      // Always clear guest session — bulk migrate all guest docs first
+      const guestSessionId = getGuestSessionId();
+      if (guestSessionId) {
+        const migrated = await migrateAllGuestDocuments(guestSessionId, ourUser.id);
+        if (migrated > 0) {
+          logger.info("guest_documents_bulk_claimed", {
+            userId: ourUser.id,
+            count: migrated,
+          });
+        }
+      }
+      clearGuestSession();
     }
 
     logger.info("auth_callback_success", {

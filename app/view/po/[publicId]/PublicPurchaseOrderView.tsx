@@ -1,10 +1,16 @@
 // app/view/po/[publicId]/PublicPurchaseOrderView.tsx — Client-side public purchase order viewer
 "use client";
 
-import { useState, useCallback } from "react";
-import { formatDate, formatCurrency } from "@/lib/utils/format";
+import { useState, useMemo } from "react";
+import type { PurchaseOrderWithItems } from "@/lib/db/types";
+import { PurchaseOrderPdf } from "@/lib/pdf-components/purchase-order";
+import { PdfPreview } from "@/components/PdfPreview";
 import { PaymentModal } from "@/components/PaymentModal";
 import { ShareModal } from "@/components/ShareModal";
+import { ViewActionsSidebar } from "@/components/ViewActionsSidebar";
+import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
+import { UserNav } from "@/components/UserNav";
+import Link from "next/link";
 
 interface PurchaseOrderData {
   id: string;
@@ -65,333 +71,175 @@ interface PurchaseOrderData {
   userId: string | null;
 }
 
+type ViewUser = { displayName: string; email: string; avatarUrl: string | null } | null;
+
 export function PublicPurchaseOrderView({
   purchaseOrder: po,
+  user,
 }: {
   purchaseOrder: PurchaseOrderData;
+  user: ViewUser;
 }) {
   const [showPayment, setShowPayment] = useState(false);
   const [showShare, setShowShare] = useState(false);
-  const accent = po.accentColor || "#d97706";
   const isGuest = !po.userId;
 
-  const handleDownload = useCallback(() => {
-    if (!po.isPaid) {
-      setShowPayment(true);
-      return;
-    }
-    // Paid — show share options
-    setShowShare(true);
-  }, [po.isPaid]);
+  const purchaseOrderRecord = useMemo((): PurchaseOrderWithItems => ({
+    id: po.id,
+    userId: po.userId,
+    guestSessionId: null,
+    publicId: po.publicId,
+    documentTitle: po.documentTitle,
+    purchaseOrderNumber: po.purchaseOrderNumber,
+    issueDate: po.issueDate,
+    expectedDeliveryDate: po.expectedDeliveryDate,
+    paymentTerms: po.paymentTerms,
+    orderNumber: po.orderNumber,
+    fromName: po.fromName,
+    fromEmail: po.fromEmail,
+    fromPhone: po.fromPhone,
+    fromMobile: po.fromMobile,
+    fromFax: po.fromFax,
+    fromAddress: po.fromAddress,
+    fromCity: po.fromCity,
+    fromZipCode: po.fromZipCode,
+    fromBusinessNumber: po.fromBusinessNumber,
+    fromWebsite: po.fromWebsite,
+    toName: po.toName,
+    toEmail: po.toEmail,
+    toPhone: po.toPhone,
+    toMobile: po.toMobile,
+    toFax: po.toFax,
+    toAddress: po.toAddress,
+    toCity: po.toCity,
+    toZipCode: po.toZipCode,
+    toBusinessNumber: po.toBusinessNumber,
+    shipToEnabled: po.shipToEnabled,
+    shipToName: po.shipToName,
+    shipToCompanyName: po.shipToCompanyName,
+    shipToAddress: po.shipToAddress,
+    shipToCity: po.shipToCity,
+    shipToZipCode: po.shipToZipCode,
+    shipToPhone: po.shipToPhone,
+    authorizedByName: po.authorizedByName,
+    authorizedByDesignation: po.authorizedByDesignation,
+    currency: po.currency,
+    taxRate: po.taxRate,
+    subtotal: po.subtotal,
+    taxAmount: po.taxAmount,
+    total: po.total,
+    accentColor: po.accentColor,
+    logoDataUrl: po.logoDataUrl,
+    signatureDataUrl: po.signatureDataUrl,
+    notes: po.notes,
+    isPaid: po.isPaid,
+    paidAt: null,
+    pdfUrl: null,
+    createdAt: "",
+    updatedAt: "",
+    lineItems: po.lineItems.map((li, i) => ({
+      id: li.id,
+      purchaseOrderId: po.id,
+      description: li.description,
+      additionalDetails: li.additionalDetails,
+      quantity: li.quantity,
+      unitPrice: li.unitPrice,
+      amount: li.amount,
+      sortOrder: i,
+      createdAt: "",
+      updatedAt: "",
+    })),
+    photos: po.photos.map((p, i) => ({
+      id: p.id,
+      purchaseOrderId: po.id,
+      url: p.url,
+      filename: null,
+      sortOrder: i,
+      createdAt: "",
+    })),
+  }), [po]);
 
-  const handlePaymentSuccess = useCallback(() => {
+  function handlePaymentSuccess() {
     setShowPayment(false);
-    // Show share modal after successful payment
     setShowShare(true);
-  }, []);
+  }
 
   return (
     <div className="min-h-screen bg-mist/30">
-      {/* Top bar */}
-      <header className="bg-white border-b border-mist">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-6 py-4">
-          <span className="text-lg font-display font-bold text-lagoon">
-            Invopap
-          </span>
-          <button
-            onClick={handleDownload}
-            className="rounded-lg bg-ember px-4 py-2 text-sm font-medium text-white hover:bg-ember/90 transition-colors flex items-center gap-2"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            {po.isPaid ? "Download / Share" : "Download PDF (KSh 10)"}
-          </button>
+      {/* Sticky header — consistent with the rest of the site */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-mist">
+        <div className="flex items-center justify-between px-4 h-14">
+          <div className="flex items-center gap-2">
+            <Link href="/" className="text-xl font-display font-bold text-lagoon">
+              Invopap
+            </Link>
+          </div>
+          <div className="flex items-center gap-2">
+            {user ? (
+              <UserNav user={user} />
+            ) : (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="text-sm text-ink/60 hover:text-ink transition-colors hidden sm:inline"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="rounded-lg bg-lagoon px-4 py-2 text-sm font-medium text-white hover:bg-lagoon/90 transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Purchase Order */}
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <div className="relative bg-white rounded-xl shadow-soft border border-mist overflow-hidden">
-          {/* Watermark if unpaid */}
-          {!po.isPaid && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
-              <div
-                className="text-6xl sm:text-7xl font-bold text-ink/[0.04] whitespace-nowrap select-none"
-                style={{ transform: "rotate(-30deg)" }}
+      {/* Left nav rail — authenticated users only */}
+      {user && <NarrowSidebarRail />}
+
+      {/* Right actions sidebar */}
+      <ViewActionsSidebar
+        isPaid={po.isPaid}
+        onPay={() => setShowPayment(true)}
+        onShare={() => setShowShare(true)}
+      />
+
+      {/* Document content */}
+      <div className={`${user ? "pl-14" : ""} lg:pr-64`}>
+        <div className="max-w-3xl mx-auto px-4 py-8">
+          <PdfPreview document={<PurchaseOrderPdf purchaseOrder={purchaseOrderRecord} showWatermark={!po.isPaid} />} />
+
+          {/* Mobile action bar */}
+          <div className="lg:hidden flex gap-3 mt-6">
+            {po.isPaid ? (
+              <button
+                onClick={() => setShowShare(true)}
+                className="flex-1 rounded-lg bg-ember px-4 py-3 text-sm font-medium text-white hover:bg-ember/90 transition-colors"
               >
-                PREVIEW
-              </div>
-            </div>
-          )}
-
-          <div className="relative z-0 p-6 sm:p-8 space-y-6">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                {po.logoDataUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={po.logoDataUrl}
-                    alt="Logo"
-                    className="h-12 w-auto object-contain"
-                  />
-                )}
-                <h1
-                  className="text-2xl font-display font-bold"
-                  style={{ color: accent }}
-                >
-                  {po.documentTitle || "PURCHASE ORDER"}
-                </h1>
-              </div>
-              <div className="text-right text-sm text-ink/60">
-                <p className="font-medium text-ink">
-                  {po.purchaseOrderNumber || "—"}
-                </p>
-                <p>Date: {formatDate(po.issueDate)}</p>
-                {po.expectedDeliveryDate && (
-                  <p>Delivery: {formatDate(po.expectedDeliveryDate)}</p>
-                )}
-                {po.orderNumber && <p>Order: {po.orderNumber}</p>}
-                {po.paymentTerms && <p>Terms: {po.paymentTerms}</p>}
-              </div>
-            </div>
-
-            {/* From / Vendor / Ship To */}
-            <div
-              className={`grid gap-6 text-sm ${
-                po.shipToEnabled ? "grid-cols-3" : "grid-cols-2"
-              }`}
-            >
-              <div>
-                <p
-                  className="text-xs font-semibold uppercase tracking-wider mb-1"
-                  style={{ color: accent }}
-                >
-                  From
-                </p>
-                <PartyBlock
-                  name={po.fromName}
-                  email={po.fromEmail}
-                  phone={po.fromPhone}
-                  mobile={po.fromMobile}
-                  fax={po.fromFax}
-                  address={po.fromAddress}
-                  city={po.fromCity}
-                  zipCode={po.fromZipCode}
-                  businessNumber={po.fromBusinessNumber}
-                />
-                {po.fromWebsite && (
-                  <p className="text-xs text-ink/40 mt-1">{po.fromWebsite}</p>
-                )}
-              </div>
-              <div>
-                <p
-                  className="text-xs font-semibold uppercase tracking-wider mb-1"
-                  style={{ color: accent }}
-                >
-                  Vendor
-                </p>
-                <PartyBlock
-                  name={po.toName}
-                  email={po.toEmail}
-                  phone={po.toPhone}
-                  mobile={po.toMobile}
-                  fax={po.toFax}
-                  address={po.toAddress}
-                  city={po.toCity}
-                  zipCode={po.toZipCode}
-                  businessNumber={po.toBusinessNumber}
-                />
-              </div>
-              {po.shipToEnabled && (
-                <div>
-                  <p
-                    className="text-xs font-semibold uppercase tracking-wider mb-1"
-                    style={{ color: accent }}
-                  >
-                    Ship To
-                  </p>
-                  <div className="space-y-0.5 text-ink/70">
-                    {po.shipToName && (
-                      <p className="font-medium text-ink">{po.shipToName}</p>
-                    )}
-                    {po.shipToCompanyName && <p>{po.shipToCompanyName}</p>}
-                    {po.shipToAddress && <p>{po.shipToAddress}</p>}
-                    {(po.shipToCity || po.shipToZipCode) && (
-                      <p>
-                        {po.shipToCity}
-                        {po.shipToCity && po.shipToZipCode && ", "}
-                        {po.shipToZipCode}
-                      </p>
-                    )}
-                    {po.shipToPhone && <p>{po.shipToPhone}</p>}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Line items */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ backgroundColor: accent }}>
-                    <th className="px-3 py-2 text-left text-white font-medium rounded-tl-lg w-12">
-                      #
-                    </th>
-                    <th className="px-3 py-2 text-left text-white font-medium">
-                      Description
-                    </th>
-                    <th className="px-3 py-2 text-right text-white font-medium w-16">
-                      Qty
-                    </th>
-                    <th className="px-3 py-2 text-right text-white font-medium w-28">
-                      Unit Price
-                    </th>
-                    <th className="px-3 py-2 text-right text-white font-medium rounded-tr-lg w-28">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {po.lineItems.map((item, i) => (
-                    <tr
-                      key={item.id}
-                      className={i % 2 === 1 ? "bg-mist/30" : ""}
-                    >
-                      <td className="px-3 py-2 text-ink/40">{i + 1}</td>
-                      <td className="px-3 py-2">
-                        <p className="text-ink">{item.description || "—"}</p>
-                        {item.additionalDetails && (
-                          <p className="text-ink/40 text-xs">
-                            {item.additionalDetails}
-                          </p>
-                        )}
-                      </td>
-                      <td className="px-3 py-2 text-right text-ink/70">
-                        {item.quantity}
-                      </td>
-                      <td className="px-3 py-2 text-right text-ink/70">
-                        {formatCurrency(item.unitPrice, po.currency)}
-                      </td>
-                      <td className="px-3 py-2 text-right font-medium">
-                        {formatCurrency(item.amount, po.currency)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Totals */}
-            <div className="flex justify-end">
-              <div className="w-64 space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-ink/50">Subtotal</span>
-                  <span>{formatCurrency(po.subtotal, po.currency)}</span>
-                </div>
-                {po.taxRate > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-ink/50">Tax ({po.taxRate}%)</span>
-                    <span>{formatCurrency(po.taxAmount, po.currency)}</span>
-                  </div>
-                )}
-                <div
-                  className="flex justify-between font-bold text-base pt-2 border-t border-mist"
-                  style={{ color: accent }}
-                >
-                  <span>Total</span>
-                  <span>{formatCurrency(po.total, po.currency)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Authorized by */}
-            {(po.authorizedByName || po.signatureDataUrl) && (
-              <div className="flex justify-end pt-4 border-t border-mist">
-                <div className="text-center">
-                  {po.signatureDataUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={po.signatureDataUrl}
-                      alt="Signature"
-                      className="h-16 w-auto object-contain"
-                    />
-                  )}
-                  <div className="border-t border-ink/20 mt-1 pt-1">
-                    {po.authorizedByName && (
-                      <p className="text-sm font-medium text-ink">
-                        {po.authorizedByName}
-                      </p>
-                    )}
-                    {po.authorizedByDesignation && (
-                      <p className="text-xs text-ink/40">
-                        {po.authorizedByDesignation}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
+                Download / Share
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowPayment(true)}
+                className="flex-1 rounded-lg bg-ember px-4 py-3 text-sm font-medium text-white hover:bg-ember/90 transition-colors"
+              >
+                Download PDF — KSh 10
+              </button>
             )}
-
-            {/* Notes */}
-            {po.notes && (
-              <div className="text-sm text-ink/60 border-t border-mist pt-4">
-                <p className="font-semibold text-ink/40 text-xs uppercase tracking-wider mb-1">
-                  Notes
-                </p>
-                <p className="whitespace-pre-wrap">{po.notes}</p>
-              </div>
-            )}
-
-            {/* Photos */}
-            {po.photos.length > 0 && (
-              <div className="space-y-2 border-t border-mist pt-4">
-                <p className="text-xs font-semibold text-ink/40 uppercase tracking-wider">
-                  Attachments
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {po.photos.map((photo) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={photo.id}
-                      src={photo.url}
-                      alt="Attachment"
-                      className="h-20 w-20 object-cover rounded-lg border border-mist"
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Footer bar */}
-            <div
-              className="h-2 rounded-full mt-6"
-              style={{ backgroundColor: accent }}
-            />
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="text-center py-6">
-          <p className="text-xs text-ink/30">
-            Created with{" "}
-            <a href="/" className="text-lagoon hover:underline" target="_blank">
-              Invopap
-            </a>
-          </p>
-        </div>
       </div>
+
+      {/* Footer — full width, outside the sidebar-padded area */}
+      <footer className="text-center text-xs text-ink/30 py-6 border-t border-mist">
+        Powered by{" "}
+        <a href="/" className="text-lagoon hover:underline">Invopap</a>{" "}
+        · <a href="/terms" className="hover:underline">Terms</a>{" "}
+        · <a href="/privacy" className="hover:underline">Privacy</a>
+      </footer>
 
       {/* Payment modal */}
       {showPayment && (
@@ -413,55 +261,6 @@ export function PublicPurchaseOrderView({
           onClose={() => setShowShare(false)}
           isGuest={isGuest}
         />
-      )}
-    </div>
-  );
-}
-
-function PartyBlock({
-  name,
-  email,
-  phone,
-  mobile,
-  fax,
-  address,
-  city,
-  zipCode,
-  businessNumber,
-}: {
-  name: string;
-  email: string | null;
-  phone: string | null;
-  mobile?: string | null;
-  fax?: string | null;
-  address: string | null;
-  city: string | null;
-  zipCode: string | null;
-  businessNumber: string | null;
-}) {
-  const hasContent = name || email || phone || address;
-
-  if (!hasContent) {
-    return <p className="text-ink/30 italic">Not specified</p>;
-  }
-
-  return (
-    <div className="space-y-0.5 text-ink/70">
-      {name && <p className="font-medium text-ink">{name}</p>}
-      {email && <p>{email}</p>}
-      {phone && <p>{phone}</p>}
-      {mobile && <p>{mobile}</p>}
-      {fax && <p className="text-xs text-ink/40">Fax: {fax}</p>}
-      {address && <p>{address}</p>}
-      {(city || zipCode) && (
-        <p>
-          {city}
-          {city && zipCode && ", "}
-          {zipCode}
-        </p>
-      )}
-      {businessNumber && (
-        <p className="text-xs text-ink/40">PIN: {businessNumber}</p>
       )}
     </div>
   );

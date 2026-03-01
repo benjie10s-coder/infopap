@@ -2,6 +2,9 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Fraunces } from "next/font/google";
 import { AuthProvider } from "@/lib/hooks/AuthProvider";
+import { SidebarProvider } from "@/lib/hooks/SidebarProvider";
+import { ExpandedSidebarOverlay } from "@/components/LeftNavSidebar";
+import { Footer } from "@/components/Footer";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -44,7 +47,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${fraunces.variable}`}>
       <body className="font-body antialiased text-ink bg-white">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <SidebarProvider>
+            <ExpandedSidebarOverlay />
+            <div className="flex min-h-screen flex-col">
+              <div className="flex-1">{children}</div>
+              <Footer />
+            </div>
+          </SidebarProvider>
+        </AuthProvider>
       </body>
     </html>
   );

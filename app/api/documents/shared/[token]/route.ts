@@ -65,9 +65,6 @@ async function consumeGuestShareToken(token: string, documentType: string): Prom
   });
 }
 
-type GetDocFn<T> = (publicId: string) => Promise<T | null>;
-type RenderPdfFn<T> = (doc: T, opts: { showWatermark: boolean }) => Promise<Buffer>;
-
 async function generatePdfForDocument(
   documentType: string,
   publicId: string

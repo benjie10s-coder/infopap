@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { UserNav } from "@/components/UserNav";
+import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 import { ShareModal } from "@/components/ShareModal";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import Link from "next/link";
@@ -16,6 +17,7 @@ interface PaidDocRow {
   toName: string;
   amount: number;
   currency: string;
+  isPaid: boolean;
   createdAt: string;
   viewUrl: string;
 }
@@ -37,12 +39,12 @@ const DOC_TYPE_BADGE: Record<string, string> = {
 // Map document type to download URL
 function getDownloadUrl(docType: PaidDocRow["docType"], publicId: string): string {
   const paths: Record<PaidDocRow["docType"], string> = {
-    invoice: `/api/invoices/download/${publicId}`,
-    "cash-sale": `/api/cash-sales/download-cs/${publicId}`,
-    "delivery-note": `/api/delivery-notes/download-dn/${publicId}`,
-    receipt: `/api/receipts/download-receipt/${publicId}`,
-    "purchase-order": `/api/purchase-orders/download-po/${publicId}`,
-    quotation: `/api/quotations/download-quotation/${publicId}`,
+    invoice: `/api/documents/download/${publicId}`,
+    "cash-sale": `/api/documents/download-cs/${publicId}`,
+    "delivery-note": `/api/documents/download-dn/${publicId}`,
+    receipt: `/api/documents/download-receipt/${publicId}`,
+    "purchase-order": `/api/documents/download-po/${publicId}`,
+    quotation: `/api/documents/download-quotation/${publicId}`,
   };
   return paths[docType];
 }
@@ -75,28 +77,25 @@ export function DocumentLibraryClient({
 
   return (
     <div className="min-h-screen bg-mist/30">
-      {/* Top bar */}
-      <header className="bg-white border-b border-mist">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3">
+      {/* Full-width top bar */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-mist">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-14">
           <Link
             href="/"
             className="text-xl font-display font-bold text-lagoon"
           >
             Invopap
           </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="text-sm text-ink/60 hover:text-ink transition-colors"
-            >
-              Dashboard
-            </Link>
-            <UserNav user={user} />
-          </div>
+          <UserNav user={user} />
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
+      {/* Narrow icon rail sidebar (below navbar) */}
+      <NarrowSidebarRail />
+
+      {/* Main content offset by rail width */}
+      <div className="pl-14">
+        <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -104,13 +103,13 @@ export function DocumentLibraryClient({
               Document Library
             </h1>
             <p className="text-sm text-ink/50 mt-1">
-              {documents.length} paid document{documents.length !== 1 ? "s" : ""} available for download and sharing
+              {documents.length} document{documents.length !== 1 ? "s" : ""} available for download and sharing
             </p>
           </div>
         </div>
 
         {/* Stats cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
           <button
             onClick={() => setFilter("all")}
             className={`p-4 rounded-xl border text-left transition-all ${
@@ -127,6 +126,7 @@ export function DocumentLibraryClient({
             { type: "cash-sale" as const, label: "Cash Sales" },
             { type: "delivery-note" as const, label: "Delivery Notes" },
             { type: "receipt" as const, label: "Receipts" },
+            { type: "purchase-order" as const, label: "Purchase Orders" },
             { type: "quotation" as const, label: "Quotations" },
           ].map(({ type, label }) => (
             <button
@@ -188,7 +188,7 @@ export function DocumentLibraryClient({
                 </svg>
               </div>
               <p className="text-ink/50 text-sm">
-                {searchQuery ? "No documents match your search" : "No paid documents yet"}
+                {searchQuery ? "No documents match your search" : "No documents yet"}
               </p>
               {!searchQuery && (
                 <Link
@@ -225,6 +225,16 @@ export function DocumentLibraryClient({
                         >
                           {doc.docNumber || "—"}
                         </Link>
+                        <span
+                          className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            doc.isPaid
+                              ? "bg-green-100 text-green-700"
+                              : "bg-amber-100 text-amber-700"
+                          }`}
+                        >
+                          <span className={`h-1.5 w-1.5 rounded-full ${doc.isPaid ? "bg-green-500" : "bg-amber-500"}`} />
+                          {doc.isPaid ? "Paid" : "Unpaid"}
+                        </span>
                       </div>
                       <p className="text-sm text-ink/50 truncate">
                         {doc.toName || "No recipient"} · {formatDate(doc.createdAt)}
@@ -247,25 +257,37 @@ export function DocumentLibraryClient({
                     >
                       View
                     </Link>
-                    <button
-                      onClick={() => setShareDoc(doc)}
-                      className="px-3 py-1.5 rounded-lg text-sm text-white bg-ember hover:bg-ember/90 transition-colors flex items-center gap-1.5"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    {doc.isPaid ? (
+                      <button
+                        onClick={() => setShareDoc(doc)}
+                        className="px-3 py-1.5 rounded-lg text-sm text-white bg-ember hover:bg-ember/90 transition-colors flex items-center gap-1.5"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                        />
-                      </svg>
-                      Share
-                    </button>
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                          />
+                        </svg>
+                        Share
+                      </button>
+                    ) : (
+                      <Link
+                        href={doc.viewUrl}
+                        className="px-3 py-1.5 rounded-lg text-sm text-white bg-amber-500 hover:bg-amber-600 transition-colors flex items-center gap-1.5"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Get PDF
+                      </Link>
+                    )}
                   </div>
                 </li>
               ))}
@@ -277,7 +299,8 @@ export function DocumentLibraryClient({
         <p className="text-center text-xs text-ink/40">
           As a registered user, you can download and share your paid documents unlimited times.
         </p>
-      </div>
+        </div>
+        </div>
 
       {/* Share Modal */}
       {shareDoc && (

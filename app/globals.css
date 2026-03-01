@@ -166,3 +166,22 @@
   0% { opacity: 0; }
   100% { opacity: 1; }
 }
+
+/* Left nav sidebar drawer animations */
+@keyframes sidebarBackdropIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes sidebarDrawerIn {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0); }
+}
+
+.sidebar-backdrop-enter {
+  animation: sidebarBackdropIn 0.2s ease-out;
+}
+
+.sidebar-drawer-enter {
+  animation: sidebarDrawerIn 0.25s ease-out;
+}
