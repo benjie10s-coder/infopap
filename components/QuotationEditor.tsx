@@ -23,29 +23,48 @@ export function QuotationEditor() {
 
   // Save quotation to API, return the publicId
   const saveQuotation = useCallback(async (): Promise<string | null> => {
+    // Client-side pre-validation
+    if (!store.from.name.trim()) {
+      alert("Please enter the sender name (From).");
+      return null;
+    }
+    if (!store.to.name.trim()) {
+      alert("Please enter the recipient name (To).");
+      return null;
+    }
+    const hasValidItem = store.items.some((i) => i.description.trim().length > 0);
+    if (!hasValidItem) {
+      alert("Please add at least one line item with a description.");
+      return null;
+    }
+
     setSaving(true);
     try {
+      // Helper: convert empty/whitespace-only strings to undefined
+      const opt = (v: string | null | undefined): string | undefined =>
+        v && v.trim() ? v.trim() : undefined;
+
       const payload = {
-        documentTitle: store.documentTitle,
-        quotationNumber: store.quotationNumber || undefined,
+        documentTitle: store.documentTitle || undefined,
+        quotationNumber: opt(store.quotationNumber),
         quotationDate: store.quotationDate,
-        validUntil: store.validUntil || undefined,
-        fromName: store.from.name,
-        fromEmail: store.from.email || undefined,
-        fromPhone: store.from.phone || undefined,
-        fromAddress: store.from.address || undefined,
-        fromCity: store.from.city || undefined,
-        fromZipCode: store.from.zipCode || undefined,
-        fromBusinessNumber: store.from.businessNumber || undefined,
-        toName: store.to.name,
-        toEmail: store.to.email || undefined,
-        toPhone: store.to.phone || undefined,
-        toAddress: store.to.address || undefined,
-        toCity: store.to.city || undefined,
-        toZipCode: store.to.zipCode || undefined,
-        toBusinessNumber: store.to.businessNumber || undefined,
-        termsAndConditions: store.termsAndConditions || undefined,
-        notes: store.notes || undefined,
+        validUntil: opt(store.validUntil),
+        fromName: store.from.name.trim(),
+        fromEmail: opt(store.from.email),
+        fromPhone: opt(store.from.phone),
+        fromAddress: opt(store.from.address),
+        fromCity: opt(store.from.city),
+        fromZipCode: opt(store.from.zipCode),
+        fromBusinessNumber: opt(store.from.businessNumber),
+        toName: store.to.name.trim(),
+        toEmail: opt(store.to.email),
+        toPhone: opt(store.to.phone),
+        toAddress: opt(store.to.address),
+        toCity: opt(store.to.city),
+        toZipCode: opt(store.to.zipCode),
+        toBusinessNumber: opt(store.to.businessNumber),
+        termsAndConditions: opt(store.termsAndConditions),
+        notes: opt(store.notes),
         discountType: store.discountType === "percentage" ? "PERCENTAGE" : "FIXED",
         discountValue: store.discountValue,
         currency: store.currency.code,
@@ -53,12 +72,14 @@ export function QuotationEditor() {
         logoDataUrl: store.logoDataUrl,
         signatureDataUrl: store.signatureDataUrl,
         photoDataUrls: store.photoDataUrls,
-        items: store.items.map((item) => ({
-          description: item.description,
-          additionalDetails: item.additionalDetails,
-          quantity: item.quantity,
-          rate: item.rate,
-        })),
+        items: store.items
+          .filter((item) => item.description.trim().length > 0)
+          .map((item) => ({
+            description: item.description.trim(),
+            additionalDetails: opt(item.additionalDetails),
+            quantity: item.quantity,
+            rate: item.rate,
+          })),
       };
 
       let res: Response;
@@ -78,6 +99,15 @@ export function QuotationEditor() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
+        // Show specific validation issues if available
+        if (err.details && Array.isArray(err.details)) {
+          const fieldErrors = err.details
+            .map((d: { path?: string[]; message?: string }) =>
+              `${d.path?.join(".") || "field"}: ${d.message || "invalid"}`
+            )
+            .join("\n");
+          throw new Error(`Validation failed:\n${fieldErrors}`);
+        }
         throw new Error(err.error || "Failed to save quotation");
       }
 
@@ -89,7 +119,9 @@ export function QuotationEditor() {
 
       return data.publicId;
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Failed to save");
+      const msg = error instanceof Error ? error.message : "Failed to save";
+      alert(msg);
+      console.error("[QuotationEditor] save failed:", msg);
       return null;
     } finally {
       setSaving(false);
