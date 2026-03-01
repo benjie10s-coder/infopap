@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getTenantContext } from "@/lib/session";
 import { createQuotation, listQuotations } from "@/lib/db";
 import { CreateQuotationSchema, ListQuotationsSchema } from "@/lib/validators";
+import { ZodError } from "zod";
 import {
   checkRateLimit,
   invoiceCreateLimiter,
@@ -115,7 +116,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (error instanceof ZodError) {
+      logger.error("create_quotation_validation_failed", {
+        issues: error.issues,
+      });
+      return NextResponse.json(
+        {
+          error: "Validation failed",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          details: error.issues,
+        },
+        { status: 400 }
+      );
+    }
+
     if (error && typeof error === "object" && "issues" in error) {
+      logger.error("create_quotation_validation_failed_legacy", {
+        errorType: (error as Record<string, unknown>).constructor?.name,
+        errorKeys: Object.keys(error),
+        message: error instanceof Error ? error.message : String(error),
+      });
       return NextResponse.json(
         {
           error: "Validation failed",

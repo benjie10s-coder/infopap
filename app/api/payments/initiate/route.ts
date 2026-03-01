@@ -25,6 +25,7 @@ import { initiateSTKPush, normalizePhoneNumber } from "@/lib/mpesa";
 import { isMpesaEnabled } from "@/lib/env";
 import { checkRateLimit, paymentLimiter } from "@/lib/rate-limit";
 import { createRequestLogger } from "@/lib/logger";
+import { ZodError } from "zod";
 
 export const maxDuration = 60; // Allow up to 60s for M-Pesa STK Push (includes token fetch + retries)
 
@@ -104,6 +105,11 @@ export async function POST(request: NextRequest) {
   try {
     // Validate input
     const body = await request.json();
+    logger.info("payment_initiate_request", {
+      documentType: body?.documentType,
+      publicId: body?.publicId,
+      hasPhone: !!body?.phoneNumber,
+    });
     const { publicId, phoneNumber, documentType } = InitiatePaymentSchema.parse(body);
 
     // Check M-Pesa is configured
@@ -116,7 +122,23 @@ export async function POST(request: NextRequest) {
 
     // Look up document by type
     logger.info("payment_resolve_document", { documentType, publicId });
-    const { document, createPayment, updateToProcessing } = await resolveDocument(documentType, publicId);
+    let resolved;
+    try {
+      resolved = await resolveDocument(documentType, publicId);
+    } catch (resolveError) {
+      logger.error("payment_resolve_document_error", {
+        documentType,
+        publicId,
+        error: resolveError instanceof Error ? resolveError.message : String(resolveError),
+        stack: resolveError instanceof Error ? resolveError.stack : undefined,
+        errorKeys: resolveError && typeof resolveError === "object" ? Object.keys(resolveError) : [],
+      });
+      return NextResponse.json(
+        { error: `Failed to look up ${documentType.toLowerCase()}` },
+        { status: 500 }
+      );
+    }
+    const { document, createPayment, updateToProcessing } = resolved;
     if (!document) {
       logger.error("payment_document_not_found", { documentType, publicId });
       return NextResponse.json(
@@ -187,8 +209,25 @@ export async function POST(request: NextRequest) {
       paymentId: paymentResult.paymentId,
     });
   } catch (error) {
-    // Zod validation errors
-    if (error && typeof error === "object" && "issues" in error) {
+    // Zod validation errors — use instanceof for precise detection
+    if (error instanceof ZodError) {
+      logger.error("payment_validation_failed", {
+        issues: error.issues,
+        formattedErrors: error.format(),
+      });
+      return NextResponse.json(
+        { error: "Validation failed", details: error.issues },
+        { status: 400 }
+      );
+    }
+
+    // Fallback: legacy check for ZodError-like objects (e.g. from different Zod versions)
+    if (error && typeof error === "object" && "issues" in error && !(error instanceof Error)) {
+      logger.error("payment_validation_failed_legacy", {
+        errorType: (error as Record<string, unknown>).constructor?.name,
+        issues: (error as Record<string, unknown>).issues,
+        errorKeys: Object.keys(error),
+      });
       return NextResponse.json(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         { error: "Validation failed", details: (error as any).issues },

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getTenantContext } from "@/lib/session";
 import { getQuotationById, updateQuotation, deleteQuotation } from "@/lib/db";
 import { UpdateQuotationSchema } from "@/lib/validators";
+import { ZodError } from "zod";
 import { checkRateLimit, privateCrudLimiter } from "@/lib/rate-limit";
 import { createRequestLogger } from "@/lib/logger";
 
@@ -77,7 +78,24 @@ export async function PUT(
     logger.done("update_quotation", { id: params.id });
     return NextResponse.json(quotation);
   } catch (error) {
+    if (error instanceof ZodError) {
+      logger.error("update_quotation_validation_failed", {
+        id: params.id,
+        issues: error.issues,
+      });
+      return NextResponse.json(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { error: "Validation failed", details: error.issues },
+        { status: 400 }
+      );
+    }
+
     if (error && typeof error === "object" && "issues" in error) {
+      logger.error("update_quotation_validation_failed_legacy", {
+        id: params.id,
+        errorType: (error as Record<string, unknown>).constructor?.name,
+        errorKeys: Object.keys(error),
+      });
       return NextResponse.json(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         { error: "Validation failed", details: (error as any).issues },

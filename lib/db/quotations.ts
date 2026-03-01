@@ -219,13 +219,13 @@ export async function getQuotationByPublicId(
 ): Promise<QuotationWithItems | null> {
   const admin = getAdminClient();
 
-  const { data: quotation } = await admin
+  const { data: quotation, error: quotationError } = await admin
     .from("Quotation")
     .select("*")
     .eq("publicId", publicId)
     .single();
 
-  if (!quotation) return null;
+  if (quotationError || !quotation) return null;
 
   const { data: lineItems } = await admin
     .from("QuotationLineItem")
@@ -233,16 +233,23 @@ export async function getQuotationByPublicId(
     .eq("quotationId", quotation.id)
     .order("sortOrder");
 
-  const { data: photos } = await admin
-    .from("QuotationPhoto")
-    .select("*")
-    .eq("quotationId", quotation.id)
-    .order("sortOrder");
+  // QuotationPhoto query — defensive: if table doesn't exist or query fails, default to []
+  let photos: { id: string; quotationId: string; url: string; filename: string | null; sortOrder: number; createdAt: string }[] = [];
+  try {
+    const { data: photoData } = await admin
+      .from("QuotationPhoto")
+      .select("*")
+      .eq("quotationId", quotation.id)
+      .order("sortOrder");
+    photos = (photoData || []) as typeof photos;
+  } catch {
+    // QuotationPhoto table may not exist yet — don't crash
+  }
 
   return {
     ...quotation,
     lineItems: lineItems || [],
-    photos: photos || [],
+    photos,
   };
 }
 
