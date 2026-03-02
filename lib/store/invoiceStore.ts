@@ -295,7 +295,7 @@ export const useInvoiceStore = create<InvoiceStore>()(
     {
       name: "invopap-invoice-store",
       storage: createJSONStorage(() => {
-        if (typeof window !== "undefined") return localStorage;
+        if (typeof window !== "undefined") return sessionStorage;
         // SSR fallback — no-op storage
         return {
           getItem: () => null,

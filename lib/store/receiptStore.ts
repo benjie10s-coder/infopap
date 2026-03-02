@@ -228,7 +228,7 @@ export const useReceiptStore = create<ReceiptStore>()(
     {
       name: "invopap-receipt-store",
       storage: createJSONStorage(() => {
-        if (typeof window !== "undefined") return localStorage;
+        if (typeof window !== "undefined") return sessionStorage;
         return {
           getItem: () => null,
           setItem: () => {},
