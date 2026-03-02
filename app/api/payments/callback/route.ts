@@ -165,9 +165,18 @@ export async function POST(request: NextRequest) {
     if (!payment) {
       logger.warn("payment_callback_no_payment", {
         checkoutRequestId: parsed.checkoutRequestId,
+        resultCode: parsed.resultCode,
+        success: parsed.success,
       });
       return OK_RESPONSE;
     }
+
+    logger.info("payment_callback_found", {
+      paymentId: payment.id,
+      documentId: payment.documentId,
+      documentType: payment.documentType,
+      currentStatus: payment.status,
+    });
 
     // 5. Idempotency: skip if already in terminal state
     if (["COMPLETED", "FAILED", "CANCELLED"].includes(payment.status)) {
@@ -220,6 +229,27 @@ export async function POST(request: NextRequest) {
           documentType: payment.documentType,
           receipt: parsed.mpesaReceiptNumber,
         });
+      } else {
+        // completePayment returned null — payment row may already be terminal
+        // but Safaricom confirmed success (resultCode 0), so mark document paid anyway
+        logger.error("payment_callback_complete_returned_null", {
+          paymentId: payment.id,
+          documentId: payment.documentId,
+          documentType: payment.documentType,
+          checkoutRequestId: parsed.checkoutRequestId,
+          paymentStatus: payment.status,
+          receipt: parsed.mpesaReceiptNumber,
+        });
+
+        // Fallback: Safaricom says paid, so honour it
+        await markDocumentPaid(payment.documentId, payment.documentType);
+
+        logger.info("payment_completed_via_fallback", {
+          paymentId: payment.id,
+          documentId: payment.documentId,
+          documentType: payment.documentType,
+          receipt: parsed.mpesaReceiptNumber,
+        });
       }
     } else {
       // 7. Handle failure
@@ -242,6 +272,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     logger.error("payment_callback_error", {
       error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return OK_RESPONSE; // Always return 200
   }

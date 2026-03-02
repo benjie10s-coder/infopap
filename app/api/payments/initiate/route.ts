@@ -217,18 +217,21 @@ export async function POST(request: NextRequest) {
     });
     const tStkPush = Date.now();
 
-    // Fire-and-forget: update payment to PROCESSING with Daraja IDs.
-    updateToProcessing(
-      paymentResult.paymentId,
-      stkResponse.MerchantRequestID,
-      stkResponse.CheckoutRequestID
-    ).catch((err) =>
+    // Await updateToProcessing — callback needs checkoutRequestId to find this payment
+    try {
+      await updateToProcessing(
+        paymentResult.paymentId,
+        stkResponse.MerchantRequestID,
+        stkResponse.CheckoutRequestID
+      );
+    } catch (err) {
       logger.error("update_processing_failed", {
         paymentId: paymentResult.paymentId,
         checkoutRequestId: stkResponse.CheckoutRequestID,
         error: err instanceof Error ? err.message : String(err),
-      })
-    );
+        stack: err instanceof Error ? err.stack : undefined,
+      });
+    }
 
     // Timing breakdown — visible in Railway logs for diagnosing latency
     const tTotal = Date.now();
