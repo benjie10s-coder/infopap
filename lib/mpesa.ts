@@ -112,6 +112,7 @@ function getNairobiTimestamp(): string {
 // =============================================================================
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
+let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 async function getAccessToken(): Promise<string> {
   // Return cached token if still valid (with 60s buffer)
@@ -131,8 +132,9 @@ async function getAccessToken(): Promise<string> {
 
   let lastError: Error | null = null;
 
-  // 2 retries with exponential backoff (6s timeout — OAuth is lightweight)
-  for (let attempt = 0; attempt < 3; attempt++) {
+  // 1 retry with backoff (6s timeout — OAuth is lightweight).
+  // 2 attempts max = 14s worst case (was 3 attempts = 21s)
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -160,8 +162,8 @@ async function getAccessToken(): Promise<string> {
       return data.access_token;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error("Unknown error");
-      if (attempt < 2) {
-        await new Promise((r) => setTimeout(r, (attempt + 1) * 1000));
+      if (attempt < 1) {
+        await new Promise((r) => setTimeout(r, 2000));
       }
     }
   }
@@ -170,13 +172,43 @@ async function getAccessToken(): Promise<string> {
 }
 
 /**
- * Pre-warm the access token cache. Called at server startup to avoid
- * the first payment request eating a 300-2000ms token fetch.
- * Fails silently — if credentials aren't configured, no harm done.
+ * Start a background timer that proactively refreshes the token 10 minutes
+ * before it expires. This means no payment request ever hits a cold token fetch.
+ * Safaricom tokens last ~3600s; we refresh at ~3000s.
+ */
+function startProactiveTokenRefresh(): void {
+  if (refreshTimer) return; // Already running
+
+  // Check every 5 minutes if the token needs refreshing
+  refreshTimer = setInterval(async () => {
+    try {
+      // Refresh if token will expire within 10 minutes (600s)
+      if (!cachedToken || Date.now() > cachedToken.expiresAt - 600_000) {
+        await getAccessToken();
+        log("info", "mpesa_token_proactive_refresh", { success: true });
+      }
+    } catch {
+      log("warn", "mpesa_token_proactive_refresh_failed", {
+        message: "Will retry in 5 minutes",
+      });
+    }
+  }, 300_000); // 5 minutes
+
+  // Don't let the timer keep the process alive during shutdown
+  if (refreshTimer && typeof refreshTimer === "object" && "unref" in refreshTimer) {
+    refreshTimer.unref();
+  }
+}
+
+/**
+ * Pre-warm the access token cache and start proactive refresh.
+ * Called at server startup to avoid the first payment request
+ * eating a 300-2000ms token fetch. Fails silently.
  */
 export async function warmUpAccessToken(): Promise<void> {
   try {
     await getAccessToken();
+    startProactiveTokenRefresh();
     log("info", "mpesa_token_prewarmed", { cached: !!cachedToken });
   } catch {
     // Non-fatal — token will be fetched on first payment request

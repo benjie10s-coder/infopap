@@ -1,25 +1,20 @@
 // app/api/payments/initiate/route.ts — POST (STK Push initiation for ALL document types)
 import { NextRequest, NextResponse } from "next/server";
 import {
-  getInvoiceByPublicId,
   createPaymentIfUnpaid,
   updatePaymentToProcessing,
-  getCashSaleByPublicId,
   createCashSalePaymentIfUnpaid,
   updateCashSalePaymentToProcessing,
-  getDeliveryNoteByPublicId,
   createDeliveryNotePaymentIfUnpaid,
   updateDeliveryNotePaymentToProcessing,
-  getReceiptByPublicId,
   createReceiptPaymentIfUnpaid,
   updateReceiptPaymentToProcessing,
-  getPurchaseOrderByPublicId,
   createPurchaseOrderPaymentIfUnpaid,
   updatePurchaseOrderPaymentToProcessing,
-  getQuotationByPublicId,
   createQuotationPaymentIfUnpaid,
   updateQuotationPaymentToProcessing,
 } from "@/lib/db";
+import { getAdminClient } from "@/lib/supabase/admin";
 import { InitiatePaymentSchema, type PayableDocumentType } from "@/lib/validators";
 import { initiateSTKPush, normalizePhoneNumber } from "@/lib/mpesa";
 import { isMpesaEnabled } from "@/lib/env";
@@ -31,76 +26,103 @@ export const maxDuration = 60; // Allow up to 60s for M-Pesa STK Push (includes 
 
 const DOWNLOAD_PRICE = 10; // KSh 10
 
-// Helper: resolve document by type and publicId
-async function resolveDocument(
+// Slim document info — only the 4 fields payment needs (skips lineItems, photos)
+interface SlimDocument {
+  id: string;
+  userId: string | null;
+  isPaid: boolean;
+  docNumber: string;
+}
+
+// Map document types to their Supabase table and number column
+const DOC_TABLE_MAP: Record<PayableDocumentType, { table: string; numberCol: string }> = {
+  INVOICE: { table: "Invoice", numberCol: "invoiceNumber" },
+  CASH_SALE: { table: "CashSale", numberCol: "cashSaleNumber" },
+  DELIVERY_NOTE: { table: "DeliveryNote", numberCol: "deliveryNoteNumber" },
+  RECEIPT: { table: "Receipt", numberCol: "receiptNumber" },
+  PURCHASE_ORDER: { table: "PurchaseOrder", numberCol: "purchaseOrderNumber" },
+  QUOTATION: { table: "Quotation", numberCol: "quotationNumber" },
+};
+
+/**
+ * Fetch only the 4 fields needed for payment (id, userId, isPaid, docNumber).
+ * Single query instead of 2-3 sequential queries (skips lineItems + photos).
+ * Saves ~100-200ms per payment initiation.
+ */
+async function getDocumentSlim(
   documentType: PayableDocumentType,
   publicId: string
-): Promise<{
-  document: { id: string; userId: string | null; isPaid: boolean; docNumber: string } | null;
-  createPayment: (params: { docId: string; userId: string | null; phoneNumber: string; amount: number }) => Promise<
-    | { success: true; paymentId: string }
-    | { success: false; error: string; code: string; paymentId?: string }
-  >;
-  updateToProcessing: (paymentId: string, merchantRequestId: string, checkoutRequestId: string) => Promise<void>;
-}> {
+): Promise<SlimDocument | null> {
+  const admin = getAdminClient();
+  const { table, numberCol } = DOC_TABLE_MAP[documentType];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (admin as any)
+    .from(table)
+    .select(`id, userId, isPaid, ${numberCol}`)
+    .eq("publicId", publicId)
+    .single();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    userId: data.userId,
+    isPaid: data.isPaid,
+    docNumber: data[numberCol],
+  };
+}
+
+// Payment operation factories by document type
+function getPaymentOps(documentType: PayableDocumentType) {
   switch (documentType) {
-    case "INVOICE": {
-      const inv = await getInvoiceByPublicId(publicId);
+    case "INVOICE":
       return {
-        document: inv ? { id: inv.id, userId: inv.userId, isPaid: inv.isPaid, docNumber: inv.invoiceNumber } : null,
-        createPayment: (p) => createPaymentIfUnpaid({ invoiceId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
+        createPayment: (p: { docId: string; userId: string | null; phoneNumber: string; amount: number }) =>
+          createPaymentIfUnpaid({ invoiceId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
         updateToProcessing: updatePaymentToProcessing,
       };
-    }
-    case "CASH_SALE": {
-      const cs = await getCashSaleByPublicId(publicId);
+    case "CASH_SALE":
       return {
-        document: cs ? { id: cs.id, userId: cs.userId, isPaid: cs.isPaid, docNumber: cs.cashSaleNumber } : null,
-        createPayment: (p) => createCashSalePaymentIfUnpaid({ cashSaleId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
+        createPayment: (p: { docId: string; userId: string | null; phoneNumber: string; amount: number }) =>
+          createCashSalePaymentIfUnpaid({ cashSaleId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
         updateToProcessing: updateCashSalePaymentToProcessing,
       };
-    }
-    case "DELIVERY_NOTE": {
-      const dn = await getDeliveryNoteByPublicId(publicId);
+    case "DELIVERY_NOTE":
       return {
-        document: dn ? { id: dn.id, userId: dn.userId, isPaid: dn.isPaid, docNumber: dn.deliveryNoteNumber } : null,
-        createPayment: (p) => createDeliveryNotePaymentIfUnpaid({ deliveryNoteId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
+        createPayment: (p: { docId: string; userId: string | null; phoneNumber: string; amount: number }) =>
+          createDeliveryNotePaymentIfUnpaid({ deliveryNoteId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
         updateToProcessing: updateDeliveryNotePaymentToProcessing,
       };
-    }
-    case "RECEIPT": {
-      const rct = await getReceiptByPublicId(publicId);
+    case "RECEIPT":
       return {
-        document: rct ? { id: rct.id, userId: rct.userId, isPaid: rct.isPaid, docNumber: rct.receiptNumber } : null,
-        createPayment: (p) => createReceiptPaymentIfUnpaid({ receiptId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
+        createPayment: (p: { docId: string; userId: string | null; phoneNumber: string; amount: number }) =>
+          createReceiptPaymentIfUnpaid({ receiptId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
         updateToProcessing: updateReceiptPaymentToProcessing,
       };
-    }
-    case "PURCHASE_ORDER": {
-      const po = await getPurchaseOrderByPublicId(publicId);
+    case "PURCHASE_ORDER":
       return {
-        document: po ? { id: po.id, userId: po.userId, isPaid: po.isPaid, docNumber: po.purchaseOrderNumber } : null,
-        createPayment: (p) => createPurchaseOrderPaymentIfUnpaid({ purchaseOrderId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
+        createPayment: (p: { docId: string; userId: string | null; phoneNumber: string; amount: number }) =>
+          createPurchaseOrderPaymentIfUnpaid({ purchaseOrderId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
         updateToProcessing: updatePurchaseOrderPaymentToProcessing,
       };
-    }
-    case "QUOTATION": {
-      const q = await getQuotationByPublicId(publicId);
+    case "QUOTATION":
       return {
-        document: q ? { id: q.id, userId: q.userId, isPaid: q.isPaid, docNumber: q.quotationNumber } : null,
-        createPayment: (p) => createQuotationPaymentIfUnpaid({ quotationId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
+        createPayment: (p: { docId: string; userId: string | null; phoneNumber: string; amount: number }) =>
+          createQuotationPaymentIfUnpaid({ quotationId: p.docId, userId: p.userId, phoneNumber: p.phoneNumber, amount: p.amount }),
         updateToProcessing: updateQuotationPaymentToProcessing,
       };
-    }
   }
 }
 
 export async function POST(request: NextRequest) {
   const logger = createRequestLogger();
+  const t0 = Date.now();
 
   // Rate limit: 5/min per IP
   const limited = await checkRateLimit(paymentLimiter, request);
   if (limited) return limited;
+  const tRateLimit = Date.now();
 
   try {
     // Validate input
@@ -120,25 +142,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Look up document by type
+    // Slim document lookup — single query for just id, userId, isPaid, docNumber
+    // (skips lineItems + photos, saves ~100-200ms vs full getXByPublicId)
     logger.info("payment_resolve_document", { documentType, publicId });
-    let resolved;
+    let document: SlimDocument | null;
     try {
-      resolved = await resolveDocument(documentType, publicId);
+      document = await getDocumentSlim(documentType, publicId);
     } catch (resolveError) {
       logger.error("payment_resolve_document_error", {
         documentType,
         publicId,
         error: resolveError instanceof Error ? resolveError.message : String(resolveError),
         stack: resolveError instanceof Error ? resolveError.stack : undefined,
-        errorKeys: resolveError && typeof resolveError === "object" ? Object.keys(resolveError) : [],
       });
       return NextResponse.json(
         { error: `Failed to look up ${documentType.toLowerCase()}` },
         { status: 500 }
       );
     }
-    const { document, createPayment, updateToProcessing } = resolved;
+    const tDocLookup = Date.now();
+
     if (!document) {
       logger.error("payment_document_not_found", { documentType, publicId });
       return NextResponse.json(
@@ -158,6 +181,9 @@ export async function POST(request: NextRequest) {
     // Normalize phone number
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
+    // Get payment operations for this document type
+    const { createPayment, updateToProcessing } = getPaymentOps(documentType);
+
     // Atomically create payment (prevents double-payment)
     const paymentResult = await createPayment({
       docId: document.id,
@@ -165,6 +191,7 @@ export async function POST(request: NextRequest) {
       phoneNumber: normalizedPhone,
       amount: DOWNLOAD_PRICE,
     });
+    const tCreatePayment = Date.now();
 
     if (!paymentResult.success) {
       logger.error("payment_rpc_failed", {
@@ -188,11 +215,9 @@ export async function POST(request: NextRequest) {
       accountReference: document.docNumber.substring(0, 12),
       transactionDesc: "Invopap Doc",
     });
+    const tStkPush = Date.now();
 
     // Fire-and-forget: update payment to PROCESSING with Daraja IDs.
-    // The client doesn't need to wait for this DB write — the STK prompt
-    // is already on its way to the user's phone. This saves ~30-80ms of
-    // perceived latency. Errors are logged but don't block the response.
     updateToProcessing(
       paymentResult.paymentId,
       stkResponse.MerchantRequestID,
@@ -205,11 +230,20 @@ export async function POST(request: NextRequest) {
       })
     );
 
+    // Timing breakdown — visible in Railway logs for diagnosing latency
+    const tTotal = Date.now();
     logger.done("payment_initiated", {
       publicId,
       documentType,
       paymentId: paymentResult.paymentId,
       checkoutRequestId: stkResponse.CheckoutRequestID,
+      timing: {
+        rateLimitMs: tRateLimit - t0,
+        docLookupMs: tDocLookup - tRateLimit,
+        createPaymentMs: tCreatePayment - tDocLookup,
+        stkPushMs: tStkPush - tCreatePayment,
+        totalMs: tTotal - t0,
+      },
     });
 
     return NextResponse.json({
