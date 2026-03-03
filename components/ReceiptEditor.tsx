@@ -228,7 +228,7 @@ export function ReceiptEditor() {
           </div>
 
           <div className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-16 z-10 space-y-4">
+            <div className="sticky top-16 z-10 max-h-[calc(100vh-5rem)] overflow-y-auto space-y-4">
               <ReceiptOptionsSidebar
                 onDownload={handleDownload}
                 onNew={handleNew}
