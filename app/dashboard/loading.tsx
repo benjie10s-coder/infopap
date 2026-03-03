@@ -10,7 +10,7 @@ export default function DashboardLoading() {
         </div>
       </div>
 
-      <div className="md:pl-14">
+      <div className="pl-14">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
           {/* Greeting skeleton */}
           <div>

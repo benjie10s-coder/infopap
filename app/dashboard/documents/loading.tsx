@@ -13,7 +13,7 @@ export default function DocumentLibraryLoading() {
         </div>
       </header>
 
-      <div className="md:pl-14">
+      <div className="pl-14">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-5 sm:space-y-6">
           {/* Header skeleton */}
           <div>

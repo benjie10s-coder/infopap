@@ -26,7 +26,7 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className={`w-full border-t border-mist bg-white ${user ? "md:pl-14" : ""}`}>
+    <footer className={`w-full border-t border-mist bg-white ${user ? "pl-14" : ""}`}>
       <div className="mx-auto flex items-center justify-between px-6 py-4 gap-4">
         {/* Left — WhatsApp support */}
         <div className="flex items-center shrink-0">
