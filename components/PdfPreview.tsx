@@ -58,37 +58,56 @@ export function PdfPreview({ document: doc, className }: PdfPreviewProps) {
   const canZoomOut = zoomIdx > 0;
 
   // ─── Container width for canvas viewer ─────────────────────
-  const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
+  const roRef = useRef<ResizeObserver | null>(null);
 
   const measureRef = useCallback((node: HTMLDivElement | null) => {
+    // Clean up previous observer
+    if (roRef.current) {
+      roRef.current.disconnect();
+      roRef.current = null;
+    }
     if (!node) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (containerRef as any).current = node;
     setContainerWidth(node.clientWidth);
-
     const ro = new ResizeObserver(([entry]) => {
       setContainerWidth(entry.contentRect.width);
     });
     ro.observe(node);
-    return () => ro.disconnect();
+    roRef.current = ro;
   }, []);
+
+  // ─── Blob URL lifted into state so useEffect can react to it ─
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [blobLoading, setBlobLoading] = useState(true);
 
   // ─── Convert blob to Uint8Array for canvas viewer ──────────
   const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
-  const lastBlobUrl = useRef<string | null>(null);
+  const [convertError, setConvertError] = useState(false);
 
-  const convertBlobToData = useCallback(async (url: string) => {
-    if (url === lastBlobUrl.current) return;
-    lastBlobUrl.current = url;
-    try {
-      const resp = await fetch(url);
-      const buf = await resp.arrayBuffer();
-      setPdfData(new Uint8Array(buf));
-    } catch {
-      // Silently fail — the error state from BlobProvider will show
-    }
-  }, []);
+  useEffect(() => {
+    if (!isMobile || !blobUrl || blobLoading) return;
+
+    let cancelled = false;
+    setConvertError(false);
+
+    (async () => {
+      try {
+        const resp = await fetch(blobUrl);
+        const buf = await resp.arrayBuffer();
+        if (!cancelled) {
+          setPdfData(new Uint8Array(buf));
+        }
+      } catch {
+        if (!cancelled) {
+          setConvertError(true);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isMobile, blobUrl, blobLoading]);
 
   const containerClass =
     className ??
@@ -125,10 +144,9 @@ export function PdfPreview({ document: doc, className }: PdfPreviewProps) {
 
       <BlobProvider document={deferredDoc}>
         {({ url, loading, error }) => {
-          // Kick off blob → Uint8Array conversion for mobile path
-          if (isMobile && url && !loading) {
-            convertBlobToData(url);
-          }
+          // Lift blob state so useEffect can trigger conversion
+          if (url !== blobUrl) setBlobUrl(url);
+          if (loading !== blobLoading) setBlobLoading(loading);
 
           return (
             <>
@@ -149,13 +167,28 @@ export function PdfPreview({ document: doc, className }: PdfPreviewProps) {
                 </div>
               )}
 
+              {convertError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
+                  <span className="text-sm text-red-500">
+                    Failed to load preview
+                  </span>
+                </div>
+              )}
+
               {/* ── MOBILE: canvas-based rendering ── */}
-              {isMobile && pdfData && (
+              {isMobile && pdfData && !convertError && (
                 <PdfCanvasViewer
                   data={pdfData}
                   dimmed={loading || isStale}
                   containerWidth={containerWidth}
                 />
+              )}
+
+              {/* ── MOBILE: loading while converting blob → canvas data ── */}
+              {isMobile && url && !pdfData && !error && !convertError && (
+                <div className="h-[600px] flex items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-mist border-t-lagoon" />
+                </div>
               )}
 
               {/* ── DESKTOP: iframe-based rendering ── */}
@@ -183,9 +216,9 @@ export function PdfPreview({ document: doc, className }: PdfPreviewProps) {
                 </div>
               )}
 
-              {/* Placeholder */}
-              {!url && !error && !(isMobile && pdfData) && (
-                <div className="h-[800px] sm:h-[1120px] flex items-center justify-center">
+              {/* Placeholder — initial state before blob is ready */}
+              {!url && !error && !convertError && (
+                <div className="h-[600px] sm:h-[1120px] flex items-center justify-center">
                   <div className="h-8 w-8 animate-spin rounded-full border-4 border-mist border-t-lagoon" />
                 </div>
               )}
