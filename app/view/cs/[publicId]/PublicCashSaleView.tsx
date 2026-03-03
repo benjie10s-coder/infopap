@@ -196,7 +196,7 @@ export function PublicCashSaleView({
       />
 
       {/* Document content */}
-      <div className={`${user ? "pl-14" : ""} lg:pr-64`}>
+      <div className={`${user ? "md:pl-14" : ""} lg:pr-64`}>
         <div className="max-w-3xl mx-auto px-4 py-8">
           <PdfPreview document={<CashSalePdf cashSale={cashSaleRecord} showWatermark={!cs.isPaid} />} />
 

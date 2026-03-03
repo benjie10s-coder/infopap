@@ -219,7 +219,7 @@ export function PurchaseOrderEditor() {
       {user && <NarrowSidebarRail />}
 
       {/* ─── Main content: 2-column layout ─── */}
-      <div className={user ? "pl-14" : ""}>
+      <div className={user ? "md:pl-14" : ""}>
       <div className="max-w-[1400px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           <div className="flex-1 min-w-0">

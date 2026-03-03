@@ -79,7 +79,7 @@ export function DocumentLibraryClient({
     <div className="min-h-screen bg-mist/30">
       {/* Full-width top bar */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-mist">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-14">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 h-14">
           <Link
             href="/"
             className="text-xl font-display font-bold text-lagoon"
@@ -93,9 +93,9 @@ export function DocumentLibraryClient({
       {/* Narrow icon rail sidebar (below navbar) */}
       <NarrowSidebarRail />
 
-      {/* Main content offset by rail width */}
-      <div className="pl-14">
-        <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
+      {/* Main content offset by rail width on md+ */}
+      <div className="md:pl-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-5 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -108,18 +108,18 @@ export function DocumentLibraryClient({
           </div>
         </div>
 
-        {/* Stats cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+        {/* Stats cards — horizontal scroll on mobile, grid on sm+ */}
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none sm:grid sm:grid-cols-3 lg:grid-cols-7">
           <button
             onClick={() => setFilter("all")}
-            className={`p-4 rounded-xl border text-left transition-all ${
+            className={`shrink-0 p-3 sm:p-4 rounded-xl border text-left transition-all min-w-[100px] sm:min-w-0 touch-target ${
               filter === "all"
                 ? "border-lagoon bg-lagoon/5"
                 : "border-mist bg-white hover:border-lagoon/30"
             }`}
           >
-            <p className="text-2xl font-bold text-ink">{documents.length}</p>
-            <p className="text-xs text-ink/50">All Documents</p>
+            <p className="text-xl sm:text-2xl font-bold text-ink">{documents.length}</p>
+            <p className="text-[11px] sm:text-xs text-ink/50 whitespace-nowrap">All Docs</p>
           </button>
           {[
             { type: "invoice" as const, label: "Invoices" },
@@ -132,14 +132,14 @@ export function DocumentLibraryClient({
             <button
               key={type}
               onClick={() => setFilter(type)}
-              className={`p-4 rounded-xl border text-left transition-all ${
+              className={`shrink-0 p-3 sm:p-4 rounded-xl border text-left transition-all min-w-[100px] sm:min-w-0 touch-target ${
                 filter === type
                   ? "border-lagoon bg-lagoon/5"
                   : "border-mist bg-white hover:border-lagoon/30"
               }`}
             >
-              <p className="text-2xl font-bold text-ink">{statsByType[type] || 0}</p>
-              <p className="text-xs text-ink/50">{label}</p>
+              <p className="text-xl sm:text-2xl font-bold text-ink">{statsByType[type] || 0}</p>
+              <p className="text-[11px] sm:text-xs text-ink/50 whitespace-nowrap">{label}</p>
             </button>
           ))}
         </div>
@@ -171,7 +171,7 @@ export function DocumentLibraryClient({
         {/* Document List */}
         <div className="bg-white rounded-xl border border-mist overflow-hidden">
           {filteredDocs.length === 0 ? (
-            <div className="px-6 py-12 text-center">
+            <div className="px-4 sm:px-6 py-12 text-center">
               <div className="w-16 h-16 bg-mist/50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
                   className="w-8 h-8 text-ink/30"
@@ -204,90 +204,112 @@ export function DocumentLibraryClient({
               {filteredDocs.map((doc) => (
                 <li
                   key={`${doc.docType}-${doc.id}`}
-                  className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-mist/20 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 hover:bg-mist/20 transition-colors"
                 >
-                  <div className="flex items-center gap-4 min-w-0 flex-1">
-                    {/* Document type badge */}
-                    <span
-                      className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium ${
-                        DOC_TYPE_BADGE[doc.docTypeLabel] || "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {doc.docTypeLabel}
-                    </span>
-
-                    {/* Document info */}
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={doc.viewUrl}
-                          className="font-medium text-ink hover:text-lagoon transition-colors truncate"
-                        >
-                          {doc.docNumber || "—"}
-                        </Link>
-                        <span
-                          className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                            doc.isPaid
-                              ? "bg-green-100 text-green-700"
-                              : "bg-amber-100 text-amber-700"
-                          }`}
-                        >
-                          <span className={`h-1.5 w-1.5 rounded-full ${doc.isPaid ? "bg-green-500" : "bg-amber-500"}`} />
-                          {doc.isPaid ? "Paid" : "Unpaid"}
-                        </span>
-                      </div>
-                      <p className="text-sm text-ink/50 truncate">
-                        {doc.toName || "No recipient"} · {formatDate(doc.createdAt)}
-                      </p>
+                  {/* Row 1 on mobile: badge + status */}
+                  <div className="flex items-center gap-2 sm:contents">
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-0 sm:flex-1 sm:contents">
+                      {/* Document type badge */}
+                      <span
+                        className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          DOC_TYPE_BADGE[doc.docTypeLabel] || "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {doc.docTypeLabel}
+                      </span>
+                      {/* Status badge — mobile only */}
+                      <span
+                        className={`sm:hidden shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          doc.isPaid
+                            ? "bg-green-100 text-green-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${doc.isPaid ? "bg-green-500" : "bg-amber-500"}`} />
+                        {doc.isPaid ? "Paid" : "Unpaid"}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Amount */}
+                  {/* Document info */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={doc.viewUrl}
+                        className="font-medium text-ink hover:text-lagoon transition-colors truncate"
+                      >
+                        {doc.docNumber || "—"}
+                      </Link>
+                      {/* Status badge — desktop only */}
+                      <span
+                        className={`hidden sm:inline-flex shrink-0 items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          doc.isPaid
+                            ? "bg-green-100 text-green-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${doc.isPaid ? "bg-green-500" : "bg-amber-500"}`} />
+                        {doc.isPaid ? "Paid" : "Unpaid"}
+                      </span>
+                    </div>
+                    <p className="text-sm text-ink/50 truncate">
+                      {doc.toName || "No recipient"} · {formatDate(doc.createdAt)}
+                    </p>
+                  </div>
+
+                  {/* Amount — desktop only */}
                   {doc.amount > 0 && (
                     <p className="shrink-0 font-medium text-ink text-sm hidden sm:block">
                       {formatCurrency(doc.amount, doc.currency)}
                     </p>
                   )}
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Link
-                      href={doc.viewUrl}
-                      className="px-3 py-1.5 rounded-lg text-sm text-lagoon border border-lagoon/30 hover:bg-lagoon/5 transition-colors"
-                    >
-                      View
-                    </Link>
-                    {doc.isPaid ? (
-                      <button
-                        onClick={() => setShareDoc(doc)}
-                        className="px-3 py-1.5 rounded-lg text-sm text-white bg-ember hover:bg-ember/90 transition-colors flex items-center gap-1.5"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                          />
-                        </svg>
-                        Share
-                      </button>
-                    ) : (
+                  {/* Bottom row on mobile: amount + actions */}
+                  <div className="flex items-center justify-between sm:justify-end gap-2">
+                    {doc.amount > 0 && (
+                      <p className="text-sm font-medium text-ink sm:hidden">
+                        {formatCurrency(doc.amount, doc.currency)}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 shrink-0">
                       <Link
                         href={doc.viewUrl}
-                        className="px-3 py-1.5 rounded-lg text-sm text-white bg-amber-500 hover:bg-amber-600 transition-colors flex items-center gap-1.5"
+                        className="px-3 py-2 rounded-lg text-sm text-lagoon border border-lagoon/30 hover:bg-lagoon/5 transition-colors touch-target"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Get PDF
+                        View
                       </Link>
-                    )}
+                      {doc.isPaid ? (
+                        <button
+                          onClick={() => setShareDoc(doc)}
+                          className="px-3 py-2 rounded-lg text-sm text-white bg-ember hover:bg-ember/90 transition-colors flex items-center gap-1.5 touch-target"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                            />
+                          </svg>
+                          Share
+                        </button>
+                      ) : (
+                        <Link
+                          href={doc.viewUrl}
+                          className="px-3 py-2 rounded-lg text-sm text-white bg-amber-500 hover:bg-amber-600 transition-colors flex items-center gap-1.5 touch-target"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Get PDF
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </li>
               ))}

@@ -41,7 +41,7 @@ export function DashboardClient({
     <div className="min-h-screen bg-mist/30">
       {/* Full-width top bar */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-mist">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-14">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 h-14">
           <Link
             href="/"
             className="text-xl font-display font-bold text-lagoon"
@@ -55,9 +55,9 @@ export function DashboardClient({
       {/* Narrow icon rail sidebar (below navbar) */}
       <NarrowSidebarRail />
 
-      {/* Main content offset by rail width */}
-      <div className="pl-14">
-        <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      {/* Main content offset by rail width on md+ */}
+      <div className="md:pl-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Greeting */}
         <div>
           <h1 className="text-2xl font-display font-bold text-ink">
@@ -70,10 +70,10 @@ export function DashboardClient({
 
         {/* Recent Documents */}
         <div className="bg-white rounded-xl border border-mist">
-          <div className="px-6 py-4 border-b border-mist flex items-center justify-between">
+          <div className="px-4 sm:px-6 py-4 border-b border-mist flex items-center justify-between">
             <h2 className="font-semibold text-ink">Recent Documents</h2>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-ink/40">
+              <span className="text-xs text-ink/40 hidden sm:inline">
                 {documents.length} shown
               </span>
               <Link
@@ -86,7 +86,7 @@ export function DashboardClient({
           </div>
 
           {documents.length === 0 ? (
-            <div className="px-6 py-12 text-center">
+            <div className="px-4 sm:px-6 py-12 text-center">
               <p className="text-ink/30 text-sm">No documents yet</p>
               <Link
                 href="/"
@@ -100,18 +100,34 @@ export function DashboardClient({
               {documents.map((doc) => (
                 <div
                   key={`${doc.docType}-${doc.id}`}
-                  className="flex items-center gap-4 px-6 py-4 hover:bg-mist/20 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 hover:bg-mist/20 transition-colors"
                 >
-                  {/* Type badge */}
-                  <span
-                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded whitespace-nowrap ${
-                      DOC_TYPE_BADGE[doc.docType] || "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {doc.docType}
-                  </span>
+                  {/* Row 1 on mobile: badge + status */}
+                  <div className="flex items-center gap-2 sm:contents">
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded whitespace-nowrap ${
+                        DOC_TYPE_BADGE[doc.docType] || "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {doc.docType}
+                    </span>
+                    <span
+                      className={`sm:hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        doc.isPaid
+                          ? "bg-green-100 text-green-700"
+                          : "bg-amber-100 text-amber-700"
+                      }`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          doc.isPaid ? "bg-green-500" : "bg-amber-500"
+                        }`}
+                      />
+                      {doc.isPaid ? "Paid" : "Unpaid"}
+                    </span>
+                  </div>
 
-                  {/* Number */}
+                  {/* Doc info */}
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-ink truncate">
                       {doc.docNumber || "—"}
@@ -122,8 +138,8 @@ export function DashboardClient({
                     </p>
                   </div>
 
-                  {/* Amount */}
-                  <div className="text-right shrink-0">
+                  {/* Amount + status (desktop only) */}
+                  <div className="hidden sm:block text-right shrink-0">
                     {doc.amount > 0 ? (
                       <p className="text-sm font-medium text-ink">
                         {formatCurrency(doc.amount, doc.currency)}
@@ -143,17 +159,23 @@ export function DashboardClient({
                     </span>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-1">
+                  {/* Bottom row on mobile: amount + view */}
+                  <div className="flex items-center justify-between sm:justify-end gap-2">
+                    {doc.amount > 0 && (
+                      <p className="text-sm font-medium text-ink sm:hidden">
+                        {formatCurrency(doc.amount, doc.currency)}
+                      </p>
+                    )}
                     <Link
                       href={doc.viewUrl}
-                      className="rounded p-2 text-ink/30 hover:text-lagoon hover:bg-lagoon/5 transition-colors"
+                      className="rounded-lg px-3 py-2 text-sm text-lagoon border border-lagoon/30 hover:bg-lagoon/5 transition-colors touch-target inline-flex items-center gap-1.5"
                       title="View"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
+                      <span className="sm:hidden">View</span>
                     </Link>
                   </div>
                 </div>
