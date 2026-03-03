@@ -1,15 +1,28 @@
 // components/PdfPreview.tsx — PDF preview with zoom controls
-// Uses BlobProvider to generate a blob URL, rendered in an iframe.
-// Zoom is handled via CSS transform on the iframe wrapper.
+// Desktop: BlobProvider → blob URL → iframe (native PDF plugin).
+// Mobile:  BlobProvider → Uint8Array → canvas via react-pdf (PdfCanvasViewer).
+// This hybrid approach guarantees rendering on Android / iOS where iframes
+// cannot display PDFs inline.
 "use client";
 
-import { useEffect, useRef, useState, type ReactElement } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactElement,
+} from "react";
 import dynamic from "next/dynamic";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 
 const BlobProvider = dynamic(
   () => import("@react-pdf/renderer").then((m) => m.BlobProvider),
   { ssr: false }
 );
+
+const PdfCanvasViewer = dynamic(() => import("./PdfCanvasViewer"), {
+  ssr: false,
+});
 
 interface PdfPreviewProps {
   document: ReactElement;
@@ -20,6 +33,8 @@ const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 const DEFAULT_ZOOM_IDX = 2; // 100 %
 
 export function PdfPreview({ document: doc, className }: PdfPreviewProps) {
+  const isMobile = useIsMobile();
+
   // ─── Debounced document (800 ms) ────────────────────────────
   const [deferredDoc, setDeferredDoc] = useState<ReactElement>(doc);
   const [isStale, setIsStale] = useState(false);
@@ -36,92 +51,147 @@ export function PdfPreview({ document: doc, className }: PdfPreviewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doc]);
 
-  // ─── Zoom ──────────────────────────────────────────────
+  // ─── Zoom (desktop only — mobile viewer has its own) ───────
   const [zoomIdx, setZoomIdx] = useState(DEFAULT_ZOOM_IDX);
   const zoom = ZOOM_STEPS[zoomIdx];
   const canZoomIn = zoomIdx < ZOOM_STEPS.length - 1;
   const canZoomOut = zoomIdx > 0;
+
+  // ─── Container width for canvas viewer ─────────────────────
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  const measureRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (containerRef as any).current = node;
+    setContainerWidth(node.clientWidth);
+
+    const ro = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width);
+    });
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, []);
+
+  // ─── Convert blob to Uint8Array for canvas viewer ──────────
+  const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
+  const lastBlobUrl = useRef<string | null>(null);
+
+  const convertBlobToData = useCallback(async (url: string) => {
+    if (url === lastBlobUrl.current) return;
+    lastBlobUrl.current = url;
+    try {
+      const resp = await fetch(url);
+      const buf = await resp.arrayBuffer();
+      setPdfData(new Uint8Array(buf));
+    } catch {
+      // Silently fail — the error state from BlobProvider will show
+    }
+  }, []);
 
   const containerClass =
     className ??
     "relative bg-white rounded-xl shadow-soft border border-mist overflow-hidden";
 
   return (
-    <div className={containerClass}>
-      {/* ── Zoom toolbar ── */}
-      <div className="sticky top-0 z-10 flex items-center justify-end gap-2 bg-slate-100 border-b border-slate-200 px-3 py-1.5 text-xs select-none">
-        <button
-          onClick={() => setZoomIdx((i) => Math.max(0, i - 1))}
-          disabled={!canZoomOut}
-          className="rounded px-1.5 py-0.5 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed font-bold"
-          aria-label="Zoom out"
-        >
-          −
-        </button>
-        <span className="tabular-nums text-slate-500 w-10 text-center">
-          {Math.round(zoom * 100)}%
-        </span>
-        <button
-          onClick={() =>
-            setZoomIdx((i) => Math.min(ZOOM_STEPS.length - 1, i + 1))
-          }
-          disabled={!canZoomIn}
-          className="rounded px-1.5 py-0.5 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed font-bold"
-          aria-label="Zoom in"
-        >
-          +
-        </button>
-      </div>
+    <div className={containerClass} ref={measureRef}>
+      {/* ── Zoom toolbar (desktop / iframe mode) ── */}
+      {!isMobile && (
+        <div className="sticky top-0 z-10 flex items-center justify-end gap-2 bg-slate-100 border-b border-slate-200 px-3 py-1.5 text-xs select-none">
+          <button
+            onClick={() => setZoomIdx((i) => Math.max(0, i - 1))}
+            disabled={!canZoomOut}
+            className="rounded px-1.5 py-0.5 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed font-bold"
+            aria-label="Zoom out"
+          >
+            −
+          </button>
+          <span className="tabular-nums text-slate-500 w-10 text-center">
+            {Math.round(zoom * 100)}%
+          </span>
+          <button
+            onClick={() =>
+              setZoomIdx((i) => Math.min(ZOOM_STEPS.length - 1, i + 1))
+            }
+            disabled={!canZoomIn}
+            className="rounded px-1.5 py-0.5 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed font-bold"
+            aria-label="Zoom in"
+          >
+            +
+          </button>
+        </div>
+      )}
 
       <BlobProvider document={deferredDoc}>
-        {({ url, loading, error }) => (
-          <>
-            {/* Loading overlay */}
-            {(loading || isStale) && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-20">
-                <span className="text-sm text-ink/40">Generating preview…</span>
-              </div>
-            )}
+        {({ url, loading, error }) => {
+          // Kick off blob → Uint8Array conversion for mobile path
+          if (isMobile && url && !loading) {
+            convertBlobToData(url);
+          }
 
-            {error && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
-                <span className="text-sm text-red-500">Preview unavailable</span>
-              </div>
-            )}
-
-            {/* PDF iframe with CSS zoom */}
-            {url && (
-              <div
-                className="overflow-auto"
-                style={{ maxHeight: "calc(100vh - 180px)" }}
-              >
-                <div
-                  style={{
-                    transform: `scale(${zoom})`,
-                    transformOrigin: "top center",
-                    width: `${100 / zoom}%`,
-                  }}
-                >
-                  <iframe
-                    src={`${url}#toolbar=0`}
-                    title="Document preview"
-                    className={`w-full border-0 transition-opacity${
-                      loading || isStale ? " opacity-40" : ""
-                    }`}
-                    style={{ height: `${1120 / zoom}px` }}
-                  />
+          return (
+            <>
+              {/* Loading overlay */}
+              {(loading || isStale) && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-20">
+                  <span className="text-sm text-ink/40">
+                    Generating preview…
+                  </span>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Placeholder */}
-            {!url && !error && (
-              <div className="h-[800px] sm:h-[1120px] flex items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-mist border-t-lagoon" />
-              </div>
-            )}
-          </>
-        )}
+              {error && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
+                  <span className="text-sm text-red-500">
+                    Preview unavailable
+                  </span>
+                </div>
+              )}
+
+              {/* ── MOBILE: canvas-based rendering ── */}
+              {isMobile && pdfData && (
+                <PdfCanvasViewer
+                  data={pdfData}
+                  dimmed={loading || isStale}
+                  containerWidth={containerWidth}
+                />
+              )}
+
+              {/* ── DESKTOP: iframe-based rendering ── */}
+              {!isMobile && url && (
+                <div
+                  className="overflow-auto"
+                  style={{ maxHeight: "calc(100vh - 180px)" }}
+                >
+                  <div
+                    style={{
+                      transform: `scale(${zoom})`,
+                      transformOrigin: "top center",
+                      width: `${100 / zoom}%`,
+                    }}
+                  >
+                    <iframe
+                      src={`${url}#toolbar=0`}
+                      title="Document preview"
+                      className={`w-full border-0 transition-opacity${
+                        loading || isStale ? " opacity-40" : ""
+                      }`}
+                      style={{ height: `${1120 / zoom}px` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Placeholder */}
+              {!url && !error && !(isMobile && pdfData) && (
+                <div className="h-[800px] sm:h-[1120px] flex items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-mist border-t-lagoon" />
+                </div>
+              )}
+            </>
+          );
+        }}
       </BlobProvider>
     </div>
   );

@@ -28,7 +28,7 @@ const nextConfig = {
           },
           {
             key: "X-Frame-Options",
-            value: "DENY",
+            value: "SAMEORIGIN",
           },
           {
             key: "Referrer-Policy",
@@ -51,8 +51,10 @@ const nextConfig = {
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.safaricom.co.ke https://sandbox.safaricom.co.ke https://*.sentry.io",
-              "frame-ancestors 'none'",
+              "frame-ancestors 'self'",
               "frame-src 'self' blob:",
+              "worker-src 'self' blob: https://cdnjs.cloudflare.com",
+              "object-src 'none'",
             ].join("; "),
           },
         ],
