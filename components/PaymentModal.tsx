@@ -175,8 +175,9 @@ export function PaymentModal({ publicId, onClose, onSuccess, documentType = "INV
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-sm">
-      <div className="relative bg-white rounded-2xl shadow-soft w-full max-w-md mx-4 p-6 animate-fadeUp">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/50 backdrop-blur-sm">
+      <div className="flex min-h-full items-end sm:items-center justify-center p-4">
+      <div className="relative bg-white rounded-2xl shadow-soft w-full max-w-md p-6 animate-fadeUp">
         {/* Close button - always visible except during success */}
         {state !== "success" && (
           <button
@@ -239,7 +240,7 @@ export function PaymentModal({ publicId, onClose, onSuccess, documentType = "INV
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="07XXXXXXXX"
                 className="w-full rounded-lg border border-mist px-4 py-3 text-base text-ink placeholder:text-ink/30 focus:border-lagoon focus:outline-none focus:ring-2 focus:ring-lagoon/20"
-                autoFocus
+                autoFocus={typeof window !== 'undefined' && window.innerWidth >= 640}
               />
               <p className="text-xs text-ink/40 mt-1">
                 Format: 07XX, 01XX, +254XX
@@ -318,6 +319,7 @@ export function PaymentModal({ publicId, onClose, onSuccess, documentType = "INV
             </button>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

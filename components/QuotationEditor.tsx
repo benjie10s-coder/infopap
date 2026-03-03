@@ -148,6 +148,7 @@ export function QuotationEditor() {
     }
 
     if (res.status === 402) {
+      setShowOptions(false);
       setShowPayment(true);
     } else {
       const err = await res.json().catch(() => ({}));
