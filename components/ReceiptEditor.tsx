@@ -11,6 +11,8 @@ import { ReceiptOptionsSidebar } from "@/components/ReceiptOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
+import { FloatingOptionsButton } from "@/components/FloatingOptionsButton";
+import { DownloadButton } from "@/components/DownloadButton";
 
 export function ReceiptEditor() {
   const store = useReceiptStore();
@@ -178,16 +180,16 @@ export function ReceiptEditor() {
                       }}
                     />
                   ) : (
-                    <div className="hidden sm:flex items-center gap-1">
+                    <div className="flex items-center gap-1">
                       <Link
                         href="/auth/login"
-                        className="rounded-lg px-3 py-1.5 text-sm text-ink/60 hover:text-ink hover:bg-mist/50 transition-colors"
+                        className="rounded-lg px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-ink/60 hover:text-ink hover:bg-mist/50 transition-colors"
                       >
                         Sign In
                       </Link>
                       <Link
                         href="/auth/signup"
-                        className="rounded-lg bg-lagoon px-3 py-1.5 text-sm font-medium text-white hover:bg-lagoon/90 transition-colors"
+                        className="rounded-lg bg-lagoon px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-white hover:bg-lagoon/90 transition-colors"
                       >
                         Sign Up
                       </Link>
@@ -195,16 +197,6 @@ export function ReceiptEditor() {
                   )}
                 </>
               )}
-
-              <button
-                onClick={() => setShowOptions(!showOptions)}
-                className="rounded-lg border border-mist p-2 text-ink/40 hover:text-ink hover:bg-mist/50 transition-colors lg:hidden touch-target flex items-center justify-center"
-                aria-label="Toggle options"
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                </svg>
-              </button>
             </div>
           </div>
         </div>
@@ -225,6 +217,11 @@ export function ReceiptEditor() {
             ) : (
               <ReceiptPreview />
             )}
+
+            {/* Download button at end of document (mobile/tablet) */}
+            <div className="mt-4 lg:hidden">
+              <DownloadButton onDownload={handleDownload} saving={saving} />
+            </div>
           </div>
 
           <div className="hidden lg:block w-64 flex-shrink-0">
@@ -239,6 +236,12 @@ export function ReceiptEditor() {
         </div>
       </div>
       </div>
+
+      {/* Floating options button (mobile/tablet) */}
+      <FloatingOptionsButton
+        onToggle={() => setShowOptions(!showOptions)}
+        visible={!showOptions}
+      />
 
       {/* ─── Options drawer (mobile) ─── */}
       {showOptions && (
