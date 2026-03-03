@@ -20,23 +20,6 @@ function LoginContent() {
     });
   }, [router]);
 
-  // On mount, check if there's a pending document save from guest mode
-  // (user may land on login instead of signup)
-  useEffect(() => {
-    const pending = localStorage.getItem("invopap_pending_save");
-    if (pending) {
-      try {
-        const parsed = JSON.parse(pending);
-        if (parsed.publicId && parsed.documentType) {
-          document.cookie = `invopap_pending_doc=${encodeURIComponent(pending)}; path=/; max-age=600; SameSite=Lax`;
-        }
-      } catch {
-        // Invalid JSON — ignore
-      }
-      localStorage.removeItem("invopap_pending_save");
-    }
-  }, []);
-
   async function handleGoogleLogin() {
     const supabase = createBrowserClient();
     // Clear any existing session so a different Google account can be chosen

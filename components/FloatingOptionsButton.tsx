@@ -15,7 +15,7 @@ export function FloatingOptionsButton({
   return (
     <button
       onClick={onToggle}
-      className="fixed bottom-6 right-4 z-40 lg:hidden flex items-center justify-center w-14 h-14 rounded-full bg-lagoon text-white shadow-lg hover:bg-lagoon/90 active:scale-95 transition-all touch-target animate-[fadeIn_0.2s_ease-out]"
+      className="fixed right-4 top-1/2 -translate-y-1/2 z-40 lg:hidden flex items-center justify-center w-14 h-14 rounded-full bg-lagoon text-white shadow-lg hover:bg-lagoon/90 active:scale-95 transition-all touch-target animate-[fadeIn_0.2s_ease-out]"
       aria-label="Options"
     >
       <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

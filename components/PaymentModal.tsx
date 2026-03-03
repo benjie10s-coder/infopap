@@ -176,7 +176,7 @@ export function PaymentModal({ publicId, onClose, onSuccess, documentType = "INV
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/50 backdrop-blur-sm">
-      <div className="flex min-h-full items-end sm:items-center justify-center p-4">
+      <div className="flex min-h-full items-center justify-center p-4">
       <div className="relative bg-white rounded-2xl shadow-soft w-full max-w-md p-6 animate-fadeUp">
         {/* Close button - always visible except during success */}
         {state !== "success" && (

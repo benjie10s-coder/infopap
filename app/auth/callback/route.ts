@@ -2,9 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
-import { clearGuestSession, migrateSingleDocument, migrateAllGuestDocuments, getGuestSessionId } from "@/lib/session";
+import { clearGuestSession } from "@/lib/session";
 import { createRequestLogger } from "@/lib/logger";
-import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {
   const logger = createRequestLogger();
@@ -77,64 +76,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (ourUser) {
-      // Check for a pending single-document save (set before OAuth redirect)
-      const cookieStore = cookies();
-      const pendingDocRaw = cookieStore.get("invopap_pending_doc")?.value;
-      const pendingDoc = pendingDocRaw
-        ? decodeURIComponent(pendingDocRaw)
-        : null;
-
-      if (pendingDoc) {
-        try {
-          const { publicId, documentType } = JSON.parse(pendingDoc);
-          if (publicId && documentType) {
-            const migrated = await migrateSingleDocument(
-              publicId,
-              documentType,
-              ourUser.id
-            );
-            if (migrated) {
-              logger.info("guest_document_saved", {
-                userId: ourUser.id,
-                publicId,
-                documentType,
-              });
-            }
-          }
-        } catch (migrateError) {
-          logger.error("pending_doc_migration_error", {
-            error:
-              migrateError instanceof Error
-                ? migrateError.message
-                : "unknown",
-          });
-        }
-
-        // Clear the pending doc cookie
-        try {
-          cookieStore.set("invopap_pending_doc", "", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 0,
-            path: "/",
-          });
-        } catch {
-          // Read-only context
-        }
-      }
-
-      // Always clear guest session — bulk migrate all guest docs first
-      const guestSessionId = getGuestSessionId();
-      if (guestSessionId) {
-        const migrated = await migrateAllGuestDocuments(guestSessionId, ourUser.id);
-        if (migrated > 0) {
-          logger.info("guest_documents_bulk_claimed", {
-            userId: ourUser.id,
-            count: migrated,
-          });
-        }
-      }
+      // Clear guest session
       clearGuestSession();
     }
 

@@ -62,16 +62,6 @@ export function ShareModal({
 
   const typeLabel = TYPE_LABELS[documentType];
 
-  // Handle "Save by signing up" — stores pending doc and redirects to signup
-  const handleSaveBySignup = useCallback(() => {
-    // Store the document info in localStorage so the signup page can set a cookie
-    localStorage.setItem(
-      "invopap_pending_save",
-      JSON.stringify({ publicId, documentType })
-    );
-    window.location.href = "/auth/signup";
-  }, [publicId, documentType]);
-
   // Handle direct download
   const handleDownload = useCallback(() => {
     window.location.href = downloadUrl;
@@ -442,62 +432,21 @@ export function ShareModal({
 
             {/* Guest save prompt — sign up to keep this document */}
             {isGuest && (
-              <div className="mt-4 space-y-3">
-                <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-xl">
-                  <div className="flex gap-3">
-                    <div className="shrink-0">
-                      <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-amber-800 text-sm">Important: One-Time Access</p>
-                      <p className="text-sm text-amber-700 mt-1">
-                        As a guest, this is your <strong>only chance</strong> to download or share this document. 
-                        Once you close this window, you&apos;ll need to pay again to access it.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sign up to save CTA */}
-                <button
-                  onClick={handleSaveBySignup}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-lagoon bg-lagoon/5 hover:bg-lagoon/10 transition-all group"
-                >
-                  <div className="h-10 w-10 rounded-full bg-lagoon/20 flex items-center justify-center group-hover:bg-lagoon/30 transition-colors">
-                    <svg
-                      className="h-5 w-5 text-lagoon"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                      />
+              <div className="mt-4 p-4 bg-amber-50 border-2 border-amber-300 rounded-xl">
+                <div className="flex gap-3">
+                  <div className="shrink-0">
+                    <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                   </div>
-                  <div className="flex-1 text-left">
-                    <p className="font-medium text-lagoon">Sign Up to Save This Document</p>
-                    <p className="text-sm text-lagoon/70">Create a free account to keep it accessible anytime</p>
+                  <div>
+                    <p className="font-semibold text-amber-800 text-sm">Important: One-Time Access</p>
+                    <p className="text-sm text-amber-700 mt-1">
+                      As a guest, this is your <strong>only chance</strong> to download or share this document. 
+                      Once you close this window, you&apos;ll need to sign up and create new documents to save them to your account.
+                    </p>
                   </div>
-                  <svg
-                    className="h-5 w-5 text-lagoon/50 group-hover:text-lagoon transition-colors"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
+                </div>
               </div>
             )}
 
@@ -597,21 +546,15 @@ export function ShareModal({
               </svg>
             </div>
 
-            {/* Post-download save prompt for guests */}
+            {/* Post-download note for guests */}
             {isGuest && successMethod === "download" && (
-              <div className="w-full p-4 bg-lagoon/5 border border-lagoon/20 rounded-xl text-center space-y-3">
-                <p className="text-sm font-medium text-ink">
-                  Want to keep this document?
+              <div className="w-full p-4 bg-amber-50 border border-amber-200 rounded-xl text-center">
+                <p className="text-sm font-medium text-amber-800">
+                  Remember: this document is not recoverable after you leave.
                 </p>
-                <p className="text-xs text-ink/50">
-                  Sign up now to save it to your account. Otherwise, this document will not be recoverable.
+                <p className="text-xs text-amber-700 mt-1">
+                  Sign up to create and save future documents to your account.
                 </p>
-                <button
-                  onClick={handleSaveBySignup}
-                  className="w-full rounded-lg bg-lagoon px-4 py-3 text-sm text-white font-medium hover:bg-lagoon/90 transition-colors"
-                >
-                  Sign Up to Save Document
-                </button>
               </div>
             )}
 
@@ -619,7 +562,7 @@ export function ShareModal({
               onClick={onClose}
               className="rounded-lg border border-mist px-6 py-2 text-sm text-ink/60 hover:bg-mist/30 transition-colors"
             >
-              {isGuest && successMethod === "download" ? "No thanks, close" : "Close"}
+              Close
             </button>
           </div>
         )}

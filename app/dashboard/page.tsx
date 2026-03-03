@@ -2,7 +2,6 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
-import { getGuestSessionId } from "@/lib/session";
 import { DashboardClient } from "./DashboardClient";
 
 export default async function DashboardPage() {
@@ -27,12 +26,8 @@ export default async function DashboardPage() {
   }
 
   // Fetch recent docs from ALL 6 tables in parallel
-  // Also include any documents the user created before signing up (guestSessionId)
   const selectCols = "id, publicId, toName, isPaid, createdAt";
-  const guestSessionId = getGuestSessionId();
-  const ownerFilter = guestSessionId
-    ? `userId.eq.${dbUser.id},guestSessionId.eq.${guestSessionId}`
-    : `userId.eq.${dbUser.id}`;
+  const ownerFilter = `userId.eq.${dbUser.id}`;
 
   const [invoices, cashSales, deliveryNotes, receipts, purchaseOrders, quotations] =
     await Promise.all([

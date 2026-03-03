@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 
 // Admin client with service role key — bypasses RLS
-// Use for: public reads, payment operations, guest-to-user migration, dashboard stats
+// Use for: public reads, payment operations, dashboard stats
 // Singleton pattern — one instance for the server lifetime
 
 let adminClient: ReturnType<typeof createClient<Database>> | null = null;
