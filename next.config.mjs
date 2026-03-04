@@ -16,7 +16,7 @@ const nextConfig = {
   },
 
   // pdfjs-dist has an optional dep on @napi-rs/canvas (Node native module).
-  // Tell webpack to ignore it for the browser bundle.
+  // Alias it to false so webpack skips it on both client and server.
   webpack: (config) => {
     config.resolve.alias.canvas = false;
     return config;

@@ -4,15 +4,12 @@
 // supports swipe-to-navigate and pinch-to-zoom via CSS touch-action.
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 
-// Bundle the pdf.js worker locally via import.meta.url.
-// pdf.js v5+ renamed the worker to .min.mjs — CDNs may not host v5 yet.
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString();
+// Use CDN-hosted worker to avoid webpack asset-module issues during
+// Next.js server-side compilation (import.meta.url fails on the server target).
+const WORKER_CDN = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PdfCanvasViewerProps {
   /** Raw PDF bytes — avoids blob-URL fetch and CSP issues */
@@ -34,6 +31,11 @@ export default function PdfCanvasViewer({
   const [numPages, setNumPages] = useState(0);
   const [zoomIdx, setZoomIdx] = useState(DEFAULT_ZOOM_IDX);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Set worker URL on mount (client-only)
+  useEffect(() => {
+    pdfjs.GlobalWorkerOptions.workerSrc = WORKER_CDN;
+  }, []);
 
   // ─── Touch / swipe state ───────────────────────────────────
   const touchStart = useRef<{ x: number; y: number } | null>(null);
