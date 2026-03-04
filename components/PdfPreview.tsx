@@ -76,38 +76,38 @@ export function PdfPreview({ document: doc, className }: PdfPreviewProps) {
     roRef.current = ro;
   }, []);
 
-  // ─── Blob URL lifted into state so useEffect can react to it ─
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
-  const [blobLoading, setBlobLoading] = useState(true);
-
   // ─── Convert blob to Uint8Array for canvas viewer ──────────
   const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
   const [convertError, setConvertError] = useState(false);
+  const convertingUrl = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (!isMobile || !blobUrl || blobLoading) return;
+  /**
+   * Called from BlobProvider render callback.
+   * Uses ref guard — NO setState during render. The actual state
+   * updates happen asynchronously inside the .then()/.catch().
+   */
+  const onBlobReady = useCallback(
+    (url: string | null, loading: boolean) => {
+      if (!url || loading || !isMobile) return;
+      if (url === convertingUrl.current) return;
+      convertingUrl.current = url;
 
-    let cancelled = false;
-    setConvertError(false);
-
-    (async () => {
-      try {
-        const resp = await fetch(blobUrl);
-        const buf = await resp.arrayBuffer();
-        if (!cancelled) {
-          setPdfData(new Uint8Array(buf));
-        }
-      } catch {
-        if (!cancelled) {
-          setConvertError(true);
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isMobile, blobUrl, blobLoading]);
+      setConvertError(false);
+      fetch(url)
+        .then((resp) => resp.arrayBuffer())
+        .then((buf) => {
+          if (convertingUrl.current === url) {
+            setPdfData(new Uint8Array(buf));
+          }
+        })
+        .catch(() => {
+          if (convertingUrl.current === url) {
+            setConvertError(true);
+          }
+        });
+    },
+    [isMobile]
+  );
 
   const containerClass =
     className ??
@@ -144,9 +144,9 @@ export function PdfPreview({ document: doc, className }: PdfPreviewProps) {
 
       <BlobProvider document={deferredDoc}>
         {({ url, loading, error }) => {
-          // Lift blob state so useEffect can trigger conversion
-          if (url !== blobUrl) setBlobUrl(url);
-          if (loading !== blobLoading) setBlobLoading(loading);
+          // Trigger blob → Uint8Array conversion for mobile
+          // (uses ref guard — no setState during render)
+          onBlobReady(url, loading);
 
           return (
             <>

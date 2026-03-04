@@ -5,11 +5,21 @@ const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
 
+  // react-pdf v10 is ESM-only — Next.js needs explicit transpilation
+  transpilePackages: ["react-pdf"],
+
   // Allow larger API request bodies (for base64 images)
   experimental: {
     serverActions: {
       bodySizeLimit: "4mb",
     },
+  },
+
+  // pdfjs-dist has an optional dep on @napi-rs/canvas (Node native module).
+  // Tell webpack to ignore it for the browser bundle.
+  webpack: (config) => {
+    config.resolve.alias.canvas = false;
+    return config;
   },
 
   // Security headers
@@ -53,7 +63,7 @@ const nextConfig = {
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.safaricom.co.ke https://sandbox.safaricom.co.ke https://*.sentry.io",
               "frame-ancestors 'self'",
               "frame-src 'self' blob:",
-              "worker-src 'self' blob: https://cdnjs.cloudflare.com",
+              "worker-src 'self' blob: https://cdnjs.cloudflare.com https://unpkg.com",
               "object-src 'none'",
             ].join("; "),
           },

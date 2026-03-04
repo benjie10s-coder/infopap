@@ -7,8 +7,12 @@
 import { useCallback, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 
-// Use CDN-hosted worker matching the bundled pdfjs-dist version
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Bundle the pdf.js worker locally via import.meta.url.
+// pdf.js v5+ renamed the worker to .min.mjs — CDNs may not host v5 yet.
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
 
 interface PdfCanvasViewerProps {
   /** Raw PDF bytes — avoids blob-URL fetch and CSP issues */
