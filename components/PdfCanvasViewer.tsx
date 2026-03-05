@@ -4,12 +4,18 @@
 // supports swipe-to-navigate and pinch-to-zoom via CSS touch-action.
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 
-// Use CDN-hosted worker to avoid webpack asset-module issues during
-// Next.js server-side compilation (import.meta.url fails on the server target).
-const WORKER_CDN = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Override the default worker URL immediately after import.
+// react-pdf sets `workerSrc = 'pdf.worker.mjs'` (a relative path that 404s in
+// Next.js). We must override BEFORE any <Document> component mounts, so the
+// assignment lives at *module scope* – not inside a useEffect.
+// This module is only loaded on the client via dynamic(() => import(...), { ssr: false }).
+//
+// Prefer the same-origin copy in public/ (copied by the postinstall script).
+// Falls back to unpkg CDN if the local file isn't available.
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
 interface PdfCanvasViewerProps {
   /** Raw PDF bytes — avoids blob-URL fetch and CSP issues */
@@ -29,13 +35,9 @@ export default function PdfCanvasViewer({
   containerWidth,
 }: PdfCanvasViewerProps) {
   const [numPages, setNumPages] = useState(0);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [zoomIdx, setZoomIdx] = useState(DEFAULT_ZOOM_IDX);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Set worker URL on mount (client-only)
-  useEffect(() => {
-    pdfjs.GlobalWorkerOptions.workerSrc = WORKER_CDN;
-  }, []);
 
   // ─── Touch / swipe state ───────────────────────────────────
   const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -83,6 +85,14 @@ export default function PdfCanvasViewer({
   // Page width fills container (minus small padding)
   const pageWidth = containerWidth ? Math.floor(containerWidth * zoom - 16) : undefined;
 
+  // Stable reference so Document doesn't re-parse on every parent render
+  const fileData = useMemo(() => ({ data }), [data]);
+
+  const onLoadError = useCallback((error: Error) => {
+    console.error("[PdfCanvasViewer] Document load error:", error);
+    setLoadError(error?.message ?? "Failed to load PDF");
+  }, []);
+
   return (
     <div className="flex flex-col">
       {/* ── Toolbar ── */}
@@ -118,7 +128,18 @@ export default function PdfCanvasViewer({
         </div>
       </div>
 
+      {/* ── Error display ── */}
+      {loadError && (
+        <div className="flex items-center justify-center py-12 px-4 text-center">
+          <div>
+            <p className="text-sm text-red-500 font-medium">Unable to render PDF</p>
+            <p className="text-xs text-slate-400 mt-1">{loadError}</p>
+          </div>
+        </div>
+      )}
+
       {/* ── Scrollable PDF area — renders ALL pages ── */}
+      {!loadError && (
       <div
         ref={scrollRef}
         onTouchStart={onTouchStart}
@@ -132,8 +153,9 @@ export default function PdfCanvasViewer({
         }}
       >
         <Document
-          file={{ data }}
+          file={fileData}
           onLoadSuccess={onDocumentLoadSuccess}
+          onLoadError={onLoadError}
           loading={
             <div className="flex items-center justify-center py-12">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500" />
@@ -164,6 +186,7 @@ export default function PdfCanvasViewer({
           ))}
         </Document>
       </div>
+      )}
     </div>
   );
 }

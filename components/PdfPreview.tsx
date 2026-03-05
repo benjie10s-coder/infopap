@@ -22,6 +22,11 @@ const BlobProvider = dynamic(
 
 const PdfCanvasViewer = dynamic(() => import("./PdfCanvasViewer"), {
   ssr: false,
+  loading: () => (
+    <div className="h-[600px] flex items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-mist border-t-lagoon" />
+    </div>
+  ),
 });
 
 interface PdfPreviewProps {
