@@ -39,7 +39,5 @@ coverage/
 
 # Misc
 
-# Generated: pdf.js worker copied from node_modules by postinstall/prebuild
-public/pdf.worker.min.mjs
 *.tsbuildinfo
 next-env.d.ts

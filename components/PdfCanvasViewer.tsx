@@ -1,28 +1,67 @@
 // components/PdfCanvasViewer.tsx — Canvas-based PDF viewer (client-only)
-// Uses react-pdf to render PDF pages as <canvas> elements.
+// Loads pdf.js directly from CDN to render PDF pages as <canvas> elements.
+// This avoids ALL webpack/worker bundling issues that plagued react-pdf.
 // Optimised for mobile: renders all pages in a scrollable column,
 // supports swipe-to-navigate and pinch-to-zoom via CSS touch-action.
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-// Override the default worker URL immediately after import.
-// react-pdf sets `workerSrc = 'pdf.worker.mjs'` (a relative path that 404s in
-// Next.js). We must override BEFORE any <Document> component mounts, so the
-// assignment lives at *module scope* – not inside a useEffect.
-// This module is only loaded on the client via dynamic(() => import(...), { ssr: false }).
-//
-// Prefer the same-origin copy in public/ (copied by the postinstall script).
-// Falls back to unpkg CDN if the local file isn't available.
-pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+// ─── Minimal pdf.js type definitions ──────────────────────────
+interface PDFPageViewport {
+  width: number;
+  height: number;
+}
 
+interface PDFPageProxy {
+  getViewport(params: { scale: number }): PDFPageViewport;
+  render(params: {
+    canvasContext: CanvasRenderingContext2D;
+    viewport: PDFPageViewport;
+  }): { promise: Promise<void> };
+}
+
+interface PDFDocumentProxy {
+  numPages: number;
+  getPage(pageNumber: number): Promise<PDFPageProxy>;
+  destroy(): void;
+}
+
+interface PDFJSLib {
+  GlobalWorkerOptions: { workerSrc: string };
+  getDocument(source: { data: Uint8Array }): {
+    promise: Promise<PDFDocumentProxy>;
+  };
+}
+
+// ─── Load pdf.js from CDN (completely bypasses webpack) ───────
+const PDFJS_CDN = "https://unpkg.com/pdfjs-dist@4.9.124/build";
+
+let _pdfjsPromise: Promise<PDFJSLib> | null = null;
+
+function loadPdfJs(): Promise<PDFJSLib> {
+  if (_pdfjsPromise) return _pdfjsPromise;
+  _pdfjsPromise = (
+    import(
+      /* webpackIgnore: true */
+      "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.min.mjs"
+    ) as Promise<PDFJSLib>
+  ).then((mod: any) => {
+    const lib: PDFJSLib = mod.default ?? mod;
+    lib.GlobalWorkerOptions.workerSrc =
+      "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.worker.min.mjs";
+    return lib;
+  });
+  return _pdfjsPromise;
+}
+
+// ─── Component ───────────────────────────────────────────────
 interface PdfCanvasViewerProps {
-  /** Raw PDF bytes — avoids blob-URL fetch and CSP issues */
+  /** Raw PDF bytes */
   data: Uint8Array;
   /** If true the viewer shows at reduced opacity (parent is re-rendering the blob) */
   dimmed?: boolean;
-  /** Outer container width in px — passed down so we can size pages */
+  /** Outer container width in px */
   containerWidth: number;
 }
 
@@ -36,7 +75,12 @@ export default function PdfCanvasViewer({
 }: PdfCanvasViewerProps) {
   const [numPages, setNumPages] = useState(0);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [zoomIdx, setZoomIdx] = useState(DEFAULT_ZOOM_IDX);
+
+  const pdfDocRef = useRef<PDFDocumentProxy | null>(null);
+  const pageRefs = useRef<Record<number, HTMLCanvasElement | null>>({});
+  const renderGen = useRef(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // ─── Touch / swipe state ───────────────────────────────────
@@ -59,50 +103,109 @@ export default function PdfCanvasViewer({
       if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
         const el = scrollRef.current;
         const pageHeight = el.scrollHeight / (numPages || 1);
-        if (dx < 0) {
-          // Swipe left → next page
-          el.scrollBy({ top: pageHeight, behavior: "smooth" });
-        } else {
-          // Swipe right → previous page
-          el.scrollBy({ top: -pageHeight, behavior: "smooth" });
-        }
+        el.scrollBy({
+          top: dx < 0 ? pageHeight : -pageHeight,
+          behavior: "smooth",
+        });
       }
     },
     [numPages]
-  );
-
-  const onDocumentLoadSuccess = useCallback(
-    ({ numPages: n }: { numPages: number }) => {
-      setNumPages(n);
-    },
-    []
   );
 
   const zoom = ZOOM_STEPS[zoomIdx];
   const canZoomIn = zoomIdx < ZOOM_STEPS.length - 1;
   const canZoomOut = zoomIdx > 0;
 
-  // Page width fills container (minus small padding)
-  const pageWidth = containerWidth ? Math.floor(containerWidth * zoom - 16) : undefined;
+  // ─── Load PDF document from CDN-loaded pdf.js ──────────────
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setLoadError(null);
+    setNumPages(0);
 
-  // Stable reference so Document doesn't re-parse on every parent render
-  const fileData = useMemo(() => ({ data }), [data]);
+    loadPdfJs()
+      .then((pdfjs) => {
+        if (cancelled) return;
+        return pdfjs.getDocument({ data }).promise;
+      })
+      .then((doc) => {
+        if (cancelled || !doc) return;
+        pdfDocRef.current?.destroy();
+        pdfDocRef.current = doc;
+        setNumPages(doc.numPages);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error("[PdfCanvasViewer] Load error:", err);
+        setLoadError(err?.message ?? "Failed to load PDF");
+        setIsLoading(false);
+      });
 
-  const onLoadError = useCallback((error: Error) => {
-    console.error("[PdfCanvasViewer] Document load error:", error);
-    setLoadError(error?.message ?? "Failed to load PDF");
+    return () => {
+      cancelled = true;
+    };
+  }, [data]);
+
+  // ─── Render all pages to canvases ──────────────────────────
+  useEffect(() => {
+    const doc = pdfDocRef.current;
+    if (!doc || numPages === 0 || !containerWidth) return;
+
+    const gen = ++renderGen.current;
+
+    (async () => {
+      for (let i = 1; i <= numPages; i++) {
+        if (renderGen.current !== gen) return;
+        const canvas = pageRefs.current[i];
+        if (!canvas) continue;
+
+        try {
+          const page = await doc.getPage(i);
+          if (renderGen.current !== gen) return;
+
+          const baseVp = page.getViewport({ scale: 1 });
+          const targetW = Math.max(containerWidth * zoom - 16, 100);
+          const scale = targetW / baseVp.width;
+          const vp = page.getViewport({ scale });
+
+          // Use devicePixelRatio for sharp rendering on retina/mobile
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = Math.floor(vp.width * dpr);
+          canvas.height = Math.floor(vp.height * dpr);
+          canvas.style.width = `${Math.floor(vp.width)}px`;
+          canvas.style.height = `${Math.floor(vp.height)}px`;
+
+          const ctx = canvas.getContext("2d");
+          if (!ctx || renderGen.current !== gen) return;
+          ctx.scale(dpr, dpr);
+
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        } catch (err) {
+          console.error(`[PdfCanvasViewer] Page ${i} render error:`, err);
+        }
+      }
+    })();
+  }, [numPages, containerWidth, zoom]);
+
+  // ─── Cleanup on unmount ────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      pdfDocRef.current?.destroy();
+      pdfDocRef.current = null;
+    };
   }, []);
 
   return (
     <div className="flex flex-col">
       {/* ── Toolbar ── */}
       <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-slate-100 border-b border-slate-200 px-3 py-1.5 text-xs select-none">
-        {/* Page count */}
         <span className="tabular-nums text-slate-500">
-          {numPages ? `${numPages} page${numPages > 1 ? "s" : ""}` : "Loading…"}
+          {isLoading
+            ? "Loading…"
+            : `${numPages} page${numPages > 1 ? "s" : ""}`}
         </span>
 
-        {/* Zoom controls */}
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setZoomIdx((i) => Math.max(0, i - 1))}
@@ -138,54 +241,39 @@ export default function PdfCanvasViewer({
         </div>
       )}
 
+      {/* ── Loading spinner ── */}
+      {isLoading && !loadError && (
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500" />
+        </div>
+      )}
+
       {/* ── Scrollable PDF area — renders ALL pages ── */}
-      {!loadError && (
-      <div
-        ref={scrollRef}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-        className={`overflow-auto bg-slate-50 flex flex-col items-center transition-opacity${
-          dimmed ? " opacity-40" : ""
-        }`}
-        style={{
-          maxHeight: "calc(100vh - 180px)",
-          WebkitOverflowScrolling: "touch", // smooth scrolling on iOS
-        }}
-      >
-        <Document
-          file={fileData}
-          onLoadSuccess={onDocumentLoadSuccess}
-          onLoadError={onLoadError}
-          loading={
-            <div className="flex items-center justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500" />
-            </div>
-          }
-          className="py-2"
+      {!loadError && !isLoading && numPages > 0 && (
+        <div
+          ref={scrollRef}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          className={`overflow-auto bg-slate-50 flex flex-col items-center transition-opacity${
+            dimmed ? " opacity-40" : ""
+          }`}
+          style={{
+            maxHeight: "calc(100vh - 180px)",
+            WebkitOverflowScrolling: "touch",
+          }}
         >
-          {Array.from({ length: numPages }, (_, i) => (
-            <div key={i} className="mb-2 shadow-sm">
-              <Page
-                pageNumber={i + 1}
-                width={pageWidth}
-                renderTextLayer={false}
-                renderAnnotationLayer={false}
-                loading={
-                  <div
-                    className="flex items-center justify-center bg-white"
-                    style={{
-                      width: pageWidth,
-                      height: pageWidth ? pageWidth * 1.414 : 400,
-                    }}
-                  >
-                    <div className="h-6 w-6 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500" />
-                  </div>
-                }
-              />
-            </div>
-          ))}
-        </Document>
-      </div>
+          <div className="py-2">
+            {Array.from({ length: numPages }, (_, i) => (
+              <div key={i} className="mb-2 shadow-sm bg-white">
+                <canvas
+                  ref={(el) => {
+                    pageRefs.current[i + 1] = el;
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
