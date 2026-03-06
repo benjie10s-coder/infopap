@@ -43,16 +43,14 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               // 'unsafe-inline' is required by Next.js for its runtime styles/scripts.
-              // 'unsafe-eval' is required by PDF.js (loaded from CDN for the mobile
-              // canvas viewer). @react-pdf/renderer runs server-side only (no eval needed).
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com",
+              "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.safaricom.co.ke https://sandbox.safaricom.co.ke https://*.sentry.io https://unpkg.com",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.safaricom.co.ke https://sandbox.safaricom.co.ke https://*.sentry.io",
               "frame-ancestors 'self'",
               "frame-src 'self' blob:",
-              "worker-src 'self' blob: https://cdnjs.cloudflare.com https://unpkg.com",
+              "worker-src 'self' blob:",
               "object-src 'none'",
             ].join("; "),
           },
