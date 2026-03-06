@@ -41,15 +41,13 @@ let _pdfjsPromise: Promise<PDFJSLib> | null = null;
 
 function loadPdfJs(): Promise<PDFJSLib> {
   if (_pdfjsPromise) return _pdfjsPromise;
+  // Use a variable so TypeScript doesn't try to resolve the URL as a module.
+  const cdnUrl = `${PDFJS_CDN}/pdf.min.mjs`;
   _pdfjsPromise = (
-    import(
-      /* webpackIgnore: true */
-      "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.min.mjs"
-    ) as Promise<PDFJSLib>
-  ).then((mod: any) => {
+    import(/* webpackIgnore: true */ cdnUrl) as Promise<PDFJSLib>
+  ).then((mod) => {
     const lib: PDFJSLib = mod.default ?? mod;
-    lib.GlobalWorkerOptions.workerSrc =
-      "https://unpkg.com/pdfjs-dist@4.9.124/build/pdf.worker.min.mjs";
+    lib.GlobalWorkerOptions.workerSrc = `${PDFJS_CDN}/pdf.worker.min.mjs`;
     return lib;
   });
   return _pdfjsPromise;
