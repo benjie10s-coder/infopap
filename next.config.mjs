@@ -43,7 +43,8 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               // 'unsafe-inline' is required by Next.js for its runtime styles/scripts.
-              "script-src 'self' 'unsafe-inline'",
+              // 'unsafe-eval' is required by @react-pdf/renderer's BlobProvider (yoga layout engine).
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
