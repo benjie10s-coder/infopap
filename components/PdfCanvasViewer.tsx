@@ -44,7 +44,9 @@ function loadPdfJs(): Promise<PDFJSLib> {
   // Use a variable so TypeScript doesn't try to resolve the URL as a module.
   const cdnUrl = `${PDFJS_CDN}/pdf.min.mjs`;
   _pdfjsPromise = (
-    import(/* webpackIgnore: true */ cdnUrl) as Promise<PDFJSLib>
+    import(/* webpackIgnore: true */ cdnUrl) as Promise<
+      { default?: PDFJSLib } & PDFJSLib
+    >
   ).then((mod) => {
     const lib: PDFJSLib = mod.default ?? mod;
     lib.GlobalWorkerOptions.workerSrc = `${PDFJS_CDN}/pdf.worker.min.mjs`;
