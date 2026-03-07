@@ -44,14 +44,14 @@ const nextConfig = {
               "default-src 'self'",
               // 'unsafe-inline' is required by Next.js for its runtime styles/scripts.
               // 'unsafe-eval' is required by @react-pdf/renderer's BlobProvider (yoga layout engine).
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.safaricom.co.ke https://sandbox.safaricom.co.ke https://*.sentry.io",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.safaricom.co.ke https://sandbox.safaricom.co.ke https://*.sentry.io https://cdnjs.cloudflare.com",
               "frame-ancestors 'self'",
               "frame-src 'self' blob:",
-              "worker-src 'self' blob:",
+              "worker-src 'self' blob: https://cdnjs.cloudflare.com",
               "object-src 'none'",
             ].join("; "),
           },
