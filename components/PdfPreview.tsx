@@ -224,5 +224,3 @@ export function PdfPreview({ document: doc, className }: PdfPreviewProps) {
     </div>
   );
 }
-  );
-}
