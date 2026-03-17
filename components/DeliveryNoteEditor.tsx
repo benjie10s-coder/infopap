@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useDeliveryNoteStore } from "@/lib/store/deliveryNoteStore";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { DeliveryNoteForm } from "@/components/DeliveryNoteForm";
-import { DeliveryNotePreview } from "@/components/DeliveryNotePreview";
+import { DocumentPreviewShell } from "@/components/DocumentPreviewShell";
+import { DeliveryNoteHtmlPreview } from "@/components/html-preview/DeliveryNoteHtmlPreview";
 import { DeliveryNoteOptionsSidebar } from "@/components/DeliveryNoteOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
@@ -219,7 +220,9 @@ export function DeliveryNoteEditor() {
                 <DeliveryNoteForm />
               </div>
             ) : (
-              <DeliveryNotePreview />
+              <DocumentPreviewShell>
+                <DeliveryNoteHtmlPreview />
+              </DocumentPreviewShell>
             )}
 
             {/* Download button at end of document (mobile/tablet) */}

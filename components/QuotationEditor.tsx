@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useQuotationStore } from "@/lib/store/quotationStore";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { QuotationForm } from "@/components/QuotationForm";
-import { QuotationPreview } from "@/components/QuotationPreview";
+import { DocumentPreviewShell } from "@/components/DocumentPreviewShell";
+import { QuotationHtmlPreview } from "@/components/html-preview/QuotationHtmlPreview";
 import { QuotationOptionsSidebar } from "@/components/QuotationOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
@@ -257,7 +258,9 @@ export function QuotationEditor() {
                 <QuotationForm />
               </div>
             ) : (
-              <QuotationPreview />
+              <DocumentPreviewShell>
+                <QuotationHtmlPreview />
+              </DocumentPreviewShell>
             )}
 
             {/* Download button at end of document (mobile/tablet) */}

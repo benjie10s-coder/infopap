@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useCashSaleStore } from "@/lib/store/cashSaleStore";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { CashSaleForm } from "@/components/CashSaleForm";
-import { CashSalePreview } from "@/components/CashSalePreview";
+import { DocumentPreviewShell } from "@/components/DocumentPreviewShell";
+import { CashSaleHtmlPreview } from "@/components/html-preview/CashSaleHtmlPreview";
 import { CashSaleOptionsSidebar } from "@/components/CashSaleOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
@@ -226,7 +227,9 @@ export function CashSaleEditor() {
                 <CashSaleForm />
               </div>
             ) : (
-              <CashSalePreview />
+              <DocumentPreviewShell>
+                <CashSaleHtmlPreview />
+              </DocumentPreviewShell>
             )}
 
             {/* Download button at end of document (mobile/tablet) */}

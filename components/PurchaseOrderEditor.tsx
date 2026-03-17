@@ -6,7 +6,8 @@ import Link from "next/link";
 import { usePurchaseOrderStore } from "@/lib/store/purchaseOrderStore";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { PurchaseOrderForm } from "@/components/PurchaseOrderForm";
-import { PurchaseOrderPreview } from "@/components/PurchaseOrderPreview";
+import { DocumentPreviewShell } from "@/components/DocumentPreviewShell";
+import { PurchaseOrderHtmlPreview } from "@/components/html-preview/PurchaseOrderHtmlPreview";
 import { PurchaseOrderOptionsSidebar } from "@/components/PurchaseOrderOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
@@ -228,7 +229,9 @@ export function PurchaseOrderEditor() {
                 <PurchaseOrderForm />
               </div>
             ) : (
-              <PurchaseOrderPreview />
+              <DocumentPreviewShell>
+                <PurchaseOrderHtmlPreview />
+              </DocumentPreviewShell>
             )}
 
             {/* Download button at end of document (mobile/tablet) */}

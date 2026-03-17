@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useInvoiceStore } from "@/lib/store/invoiceStore";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { InvoiceForm } from "@/components/InvoiceForm";
-import { InvoicePreview } from "@/components/InvoicePreview";
+import { DocumentPreviewShell } from "@/components/DocumentPreviewShell";
+import { InvoiceHtmlPreview } from "@/components/html-preview/InvoiceHtmlPreview";
 import { OptionsSidebar } from "@/components/OptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
@@ -230,7 +231,9 @@ export function InvoiceEditor() {
                 <InvoiceForm />
               </div>
             ) : (
-              <InvoicePreview />
+              <DocumentPreviewShell>
+                <InvoiceHtmlPreview />
+              </DocumentPreviewShell>
             )}
 
             {/* Download button at end of document (mobile/tablet) */}

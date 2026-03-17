@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useReceiptStore } from "@/lib/store/receiptStore";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { ReceiptForm } from "@/components/ReceiptForm";
-import { ReceiptPreview } from "@/components/ReceiptPreview";
+import { DocumentPreviewShell } from "@/components/DocumentPreviewShell";
+import { ReceiptHtmlPreview } from "@/components/html-preview/ReceiptHtmlPreview";
 import { ReceiptOptionsSidebar } from "@/components/ReceiptOptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
 import { UserNav } from "@/components/UserNav";
@@ -216,7 +217,9 @@ export function ReceiptEditor() {
                 <ReceiptForm />
               </div>
             ) : (
-              <ReceiptPreview />
+              <DocumentPreviewShell>
+                <ReceiptHtmlPreview />
+              </DocumentPreviewShell>
             )}
 
             {/* Download button at end of document (mobile/tablet) */}
