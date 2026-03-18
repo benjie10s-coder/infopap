@@ -229,7 +229,7 @@ export function PaymentModal({ publicId, onClose, onSuccess, documentType = "INV
         </div>
 
         {/* Input state */}
-        {state === "input" && (
+        {state === "input" && (<>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-ink/60 mb-1">
@@ -287,7 +287,7 @@ export function PaymentModal({ publicId, onClose, onSuccess, documentType = "INV
               </svg>
             </Link>
           </div>
-        )}
+        </>)}
 
         {/* Processing state */}
         {state === "processing" && (
