@@ -1,6 +1,6 @@
 // lib/supabase/database.types.ts — Supabase Database type definition
 // Generated from SQL migrations to give the Supabase client proper types
-// Tables: User, Invoice, LineItem, InvoicePhoto, Payment, DeliveryNote, DeliveryNoteLineItem, DeliveryNotePhoto, DeliveryNotePayment, Receipt, ReceiptPhoto, ReceiptPayment, CashSale, CashSaleLineItem, CashSalePhoto, CashSalePayment, Quotation, QuotationLineItem, QuotationPhoto, QuotationPayment, PurchaseOrder, PurchaseOrderLineItem, PurchaseOrderPhoto, PurchaseOrderPayment
+// Tables: User, Invoice, LineItem, InvoicePhoto, Payment, DeliveryNote, DeliveryNoteLineItem, DeliveryNotePhoto, DeliveryNotePayment, Receipt, ReceiptPhoto, ReceiptPayment, CashSale, CashSaleLineItem, CashSalePhoto, CashSalePayment, Quotation, QuotationLineItem, QuotationPhoto, QuotationPayment, PurchaseOrder, PurchaseOrderLineItem, PurchaseOrderPhoto, PurchaseOrderPayment, Subscription, AuditLog
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -1840,6 +1840,39 @@ export interface Database {
             referencedColumns: ["id"];
           },
         ];
+      };
+      AuditLog: {
+        Row: {
+          id: string;
+          actor: string;
+          action: string;
+          targetType: string | null;
+          targetId: string | null;
+          details: Record<string, unknown>;
+          ipAddress: string | null;
+          createdAt: string;
+        };
+        Insert: {
+          id?: string;
+          actor?: string;
+          action: string;
+          targetType?: string | null;
+          targetId?: string | null;
+          details?: Record<string, unknown>;
+          ipAddress?: string | null;
+          createdAt?: string;
+        };
+        Update: {
+          id?: string;
+          actor?: string;
+          action?: string;
+          targetType?: string | null;
+          targetId?: string | null;
+          details?: Record<string, unknown>;
+          ipAddress?: string | null;
+          createdAt?: string;
+        };
+        Relationships: [];
       };
       Subscription: {
         Row: {

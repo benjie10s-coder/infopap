@@ -1,6 +1,6 @@
 // app/api/documents/download-po/[publicId]/route.ts — Purchase Order PDF download
 import { NextRequest, NextResponse } from "next/server";
-import { getPurchaseOrderByPublicId, consumePurchaseOrderDownload, markPurchaseOrderPaid, useSubscriptionDocument } from "@/lib/db";
+import { getPurchaseOrderByPublicId, consumePurchaseOrderDownload, markPurchaseOrderPaid, consumeSubscriptionDocument } from "@/lib/db";
 import { renderPurchaseOrderPdf } from "@/lib/purchase-order-pdf";
 import { checkRateLimit, publicReadLimiter } from "@/lib/rate-limit";
 import { createRequestLogger } from "@/lib/logger";
@@ -30,7 +30,7 @@ export async function GET(
     if (po.userId) {
       const tenant = await getTenantContext();
       if (tenant.isAuthenticated && tenant.userId === po.userId) {
-        const usage = await useSubscriptionDocument(tenant.userId);
+        const usage = await consumeSubscriptionDocument(tenant.userId);
         if (usage) {
           await markPurchaseOrderPaid(po.id);
           logger.info("subscription_doc_used", {

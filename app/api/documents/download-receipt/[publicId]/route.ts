@@ -1,6 +1,6 @@
 // app/api/documents/download-receipt/[publicId]/route.ts — Receipt PDF download
 import { NextRequest, NextResponse } from "next/server";
-import { getReceiptByPublicId, consumeReceiptDownload, markReceiptPaid, useSubscriptionDocument } from "@/lib/db";
+import { getReceiptByPublicId, consumeReceiptDownload, markReceiptPaid, consumeSubscriptionDocument } from "@/lib/db";
 import { renderReceiptPdf } from "@/lib/receipt-pdf";
 import { checkRateLimit, publicReadLimiter } from "@/lib/rate-limit";
 import { createRequestLogger } from "@/lib/logger";
@@ -30,7 +30,7 @@ export async function GET(
     if (receipt.userId) {
       const tenant = await getTenantContext();
       if (tenant.isAuthenticated && tenant.userId === receipt.userId) {
-        const usage = await useSubscriptionDocument(tenant.userId);
+        const usage = await consumeSubscriptionDocument(tenant.userId);
         if (usage) {
           await markReceiptPaid(receipt.id);
           logger.info("subscription_doc_used", {

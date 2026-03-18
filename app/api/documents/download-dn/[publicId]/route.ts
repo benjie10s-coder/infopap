@@ -1,6 +1,6 @@
 // app/api/documents/download-dn/[publicId]/route.ts — Delivery Note PDF download
 import { NextRequest, NextResponse } from "next/server";
-import { getDeliveryNoteByPublicId, consumeDeliveryNoteDownload, markDeliveryNotePaid, useSubscriptionDocument } from "@/lib/db";
+import { getDeliveryNoteByPublicId, consumeDeliveryNoteDownload, markDeliveryNotePaid, consumeSubscriptionDocument } from "@/lib/db";
 import { renderDeliveryNotePdf } from "@/lib/delivery-note-pdf";
 import { checkRateLimit, publicReadLimiter } from "@/lib/rate-limit";
 import { createRequestLogger } from "@/lib/logger";
@@ -30,7 +30,7 @@ export async function GET(
     if (note.userId) {
       const tenant = await getTenantContext();
       if (tenant.isAuthenticated && tenant.userId === note.userId) {
-        const usage = await useSubscriptionDocument(tenant.userId);
+        const usage = await consumeSubscriptionDocument(tenant.userId);
         if (usage) {
           await markDeliveryNotePaid(note.id);
           logger.info("subscription_doc_used", {

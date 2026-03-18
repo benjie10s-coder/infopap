@@ -1,6 +1,6 @@
 // app/api/documents/download-quotation/[publicId]/route.ts — Quotation PDF download
 import { NextRequest, NextResponse } from "next/server";
-import { getQuotationByPublicId, consumeQuotationDownload, markQuotationPaid, useSubscriptionDocument } from "@/lib/db";
+import { getQuotationByPublicId, consumeQuotationDownload, markQuotationPaid, consumeSubscriptionDocument } from "@/lib/db";
 import { renderQuotationPdf } from "@/lib/quotation-pdf";
 import { checkRateLimit, publicReadLimiter } from "@/lib/rate-limit";
 import { createRequestLogger } from "@/lib/logger";
@@ -30,7 +30,7 @@ export async function GET(
     if (quotation.userId) {
       const tenant = await getTenantContext();
       if (tenant.isAuthenticated && tenant.userId === quotation.userId) {
-        const usage = await useSubscriptionDocument(tenant.userId);
+        const usage = await consumeSubscriptionDocument(tenant.userId);
         if (usage) {
           await markQuotationPaid(quotation.id);
           logger.info("subscription_doc_used", {

@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useAdminAuth } from "@/lib/hooks/useAdminAuth";
-import { StatCard } from "@/components/admin/StatCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 
 interface ServiceHealth {

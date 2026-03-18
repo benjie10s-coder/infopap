@@ -1,7 +1,7 @@
 // app/admin/layout.tsx — Admin layout with sidebar, auth gate, and dark theme
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AdminAuthContext, useAdminAuthProvider, useAdminAuth } from "@/lib/hooks/useAdminAuth";

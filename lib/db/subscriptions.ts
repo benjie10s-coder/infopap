@@ -89,7 +89,7 @@ export async function activateSubscriptionByCheckout(
 // Use one document from subscription via RPC
 // =============================================================================
 
-export async function useSubscriptionDocument(
+export async function consumeSubscriptionDocument(
   userId: string
 ): Promise<SubscriptionUsageResult | null> {
   const admin = getAdminClient();

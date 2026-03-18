@@ -1,6 +1,6 @@
 // app/api/documents/download-cs/[publicId]/route.ts — Cash Sale PDF download
 import { NextRequest, NextResponse } from "next/server";
-import { getCashSaleByPublicId, consumeCashSaleDownload, markCashSalePaid, useSubscriptionDocument } from "@/lib/db";
+import { getCashSaleByPublicId, consumeCashSaleDownload, markCashSalePaid, consumeSubscriptionDocument } from "@/lib/db";
 import { renderCashSalePdf } from "@/lib/cash-sale-pdf";
 import { checkRateLimit, publicReadLimiter } from "@/lib/rate-limit";
 import { createRequestLogger } from "@/lib/logger";
@@ -30,7 +30,7 @@ export async function GET(
     if (sale.userId) {
       const tenant = await getTenantContext();
       if (tenant.isAuthenticated && tenant.userId === sale.userId) {
-        const usage = await useSubscriptionDocument(tenant.userId);
+        const usage = await consumeSubscriptionDocument(tenant.userId);
         if (usage) {
           await markCashSalePaid(sale.id);
           logger.info("subscription_doc_used", {

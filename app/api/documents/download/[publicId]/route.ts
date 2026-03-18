@@ -1,6 +1,6 @@
 // app/api/documents/download/[publicId]/route.ts — PDF download 
 import { NextRequest, NextResponse } from "next/server";
-import { getInvoiceByPublicId, markInvoicePaid, useSubscriptionDocument } from "@/lib/db";
+import { getInvoiceByPublicId, markInvoicePaid, consumeSubscriptionDocument } from "@/lib/db";
 import { renderInvoicePdf } from "@/lib/pdf";
 import { checkRateLimit, publicReadLimiter } from "@/lib/rate-limit";
 import { createRequestLogger } from "@/lib/logger";
@@ -32,7 +32,7 @@ export async function GET(
       if (invoice.userId) {
         const tenant = await getTenantContext();
         if (tenant.isAuthenticated && tenant.userId === invoice.userId) {
-          const usage = await useSubscriptionDocument(tenant.userId);
+          const usage = await consumeSubscriptionDocument(tenant.userId);
           if (usage) {
             await markInvoicePaid(invoice.id);
             logger.info("subscription_doc_used", {
