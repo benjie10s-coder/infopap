@@ -24,7 +24,7 @@ Complete these steps before deploying the Telegram bot to production.
 - [ ] Create bot with [@BotFather](https://t.me/botfather)
 - [ ] Copy bot token
 - [ ] Set bot profile picture & description
-  - Name: "InvoPap Bot"
+  - Name: "InvoSafi Bot"
   - Description: "Create documents (invoices, quotes, etc.) and pay with M-Pesa"
 - [ ] Set bot commands:
   ```
@@ -125,11 +125,11 @@ Complete these steps before deploying the Telegram bot to production.
 
 - [ ] Dockerfile builds successfully:
   ```bash
-  docker build -t invopap-telegram-bot .
+  docker build -t invosafi-telegram-bot .
   ```
 - [ ] Container runs with test token:
   ```bash
-  docker run -e TELEGRAM_BOT_TOKEN=xxx invopap-telegram-bot
+  docker run -e TELEGRAM_BOT_TOKEN=xxx invosafi-telegram-bot
   ```
 - [ ] Health check endpoint works
 - [ ] Graceful shutdown on SIGTERM
@@ -157,7 +157,7 @@ Complete these steps before deploying the Telegram bot to production.
 - [ ] Create docker-compose.yml
 - [ ] Set environment variables
 - [ ] Run: `docker-compose up -d`
-- [ ] Check logs: `docker-compose logs -f invopap-bot`
+- [ ] Check logs: `docker-compose logs -f invosafi-bot`
 
 #### AWS/GCP/Azure
 
@@ -180,10 +180,10 @@ Complete these steps before deploying the Telegram bot to production.
   railway logs
 
   # Docker
-  docker logs invopap-telegram-bot -f
+  docker logs invosafi-telegram-bot -f
 
   # Server logs
-  tail -f /var/log/invopap-bot.log
+  tail -f /var/log/invosafi-bot.log
   ```
 
 ## Monitoring & Maintenance

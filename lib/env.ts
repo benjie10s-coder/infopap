@@ -26,7 +26,7 @@ export interface EnvConfig {
   // Email (Resend)
   RESEND_API_KEY?: string;
   RESEND_FROM_EMAIL?: string; // e.g., "documents@yourdomain.com"
-  RESEND_FROM_NAME?: string;  // e.g., "Invopap Documents"
+  RESEND_FROM_NAME?: string;  // e.g., "InvoSafi Documents"
 }
 
 export function validateEnv(): { valid: boolean; errors: string[]; warnings: string[] } {
@@ -100,7 +100,7 @@ export function validateEnv(): { valid: boolean; errors: string[]; warnings: str
     }
     if (process.env.RESEND_API_KEY && !process.env.RESEND_FROM_EMAIL) {
       warnings.push(
-        "RESEND_FROM_EMAIL not set — falling back to documents@invopap.com which must be a verified domain in your Resend account, or all emails will return 422 errors"
+        "RESEND_FROM_EMAIL not set — falling back to documents@invosafi.com which must be a verified domain in your Resend account, or all emails will return 422 errors"
       );
     }
   }
@@ -136,7 +136,7 @@ export function isEmailEnabled(): boolean {
 export function getResendConfig() {
   return {
     apiKey: process.env.RESEND_API_KEY || "",
-    fromEmail: process.env.RESEND_FROM_EMAIL || "documents@invopap.com",
-    fromName: process.env.RESEND_FROM_NAME || "Invopap",
+    fromEmail: process.env.RESEND_FROM_EMAIL || "documents@invosafi.com",
+    fromName: process.env.RESEND_FROM_NAME || "InvoSafi",
   };
 }

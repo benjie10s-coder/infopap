@@ -293,7 +293,7 @@ export const useInvoiceStore = create<InvoiceStore>()(
         })),
     }),
     {
-      name: "invopap-invoice-store",
+      name: "invosafi-invoice-store",
       storage: createJSONStorage(() => {
         if (typeof window !== "undefined") return sessionStorage;
         // SSR fallback — no-op storage

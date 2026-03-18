@@ -143,7 +143,7 @@ export default function AdminUsersPage() {
         </div>
         <ExportButton
           data={users as unknown as Record<string, unknown>[]}
-          filename="invopap-users"
+          filename="invosafi-users"
           columns={[
             { key: "name", label: "Name" },
             { key: "email", label: "Email" },

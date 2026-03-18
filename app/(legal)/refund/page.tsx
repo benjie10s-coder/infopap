@@ -2,8 +2,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Refund Policy — Invopap",
-  description: "Invopap Refund Policy",
+  title: "Refund Policy — InvoSafi",
+  description: "InvoSafi Refund Policy",
 };
 
 export default function RefundPage() {
@@ -14,7 +14,7 @@ export default function RefundPage() {
 
       <h2>Digital Goods</h2>
       <p>
-        Invopap provides digital document downloads (PDF files). Once a document
+        InvoSafi provides digital document downloads (PDF files). Once a document
         has been successfully generated and downloaded, the transaction is
         considered complete.
       </p>
@@ -54,7 +54,7 @@ export default function RefundPage() {
       <h2>How to Request a Refund</h2>
       <ol>
         <li>
-          Email <a href="mailto:support@invopap.com">support@invopap.com</a>{" "}
+          Email <a href="mailto:support@invosafi.com">support@invosafi.com</a>{" "}
           with:
           <ul>
             <li>Your M-Pesa phone number</li>
@@ -79,7 +79,7 @@ export default function RefundPage() {
       <h2>Contact</h2>
       <p>
         For refund requests, email{" "}
-        <a href="mailto:support@invopap.com">support@invopap.com</a> or reach
+        <a href="mailto:support@invosafi.com">support@invosafi.com</a> or reach
         us via our support channels.
       </p>
     </article>

@@ -13,7 +13,7 @@ Copy the key (re_xxx...)
 # .env.local
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=onboarding@resend.dev
-RESEND_FROM_NAME=Invopap Documents
+RESEND_FROM_NAME=InvoSafi Documents
 ```
 
 ### 3. Test (1 min)
@@ -37,7 +37,7 @@ node scripts/test-resend.js
 ```env
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=onboarding@resend.dev
-RESEND_FROM_NAME=Invopap
+RESEND_FROM_NAME=InvoSafi
 ```
 ✓ Free, easy  
 ✗ Recipients must be pre-verified
@@ -46,7 +46,7 @@ RESEND_FROM_NAME=Invopap
 ```env
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=documents@yourdomain.com
-RESEND_FROM_NAME=Invopap Documents
+RESEND_FROM_NAME=InvoSafi Documents
 ```
 ✓ Send to anyone, professional  
 ✗ Requires domain verification
@@ -212,7 +212,7 @@ WHERE userId = 'x' AND createdAt >= NOW() - '1 hour'::interval;
 ## Cost
 
 - **Resend**: Free tier includes 100 emails/day, unlimited domains
-- **Invopap**: No additional costs
+- **InvoSafi**: No additional costs
 
 ---
 

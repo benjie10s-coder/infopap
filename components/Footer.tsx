@@ -52,7 +52,7 @@ export function Footer() {
 
         {/* Centre — Branding */}
         <p className="text-[12px] text-ink/40 text-center leading-tight">
-          <span className="font-semibold text-ink/60">Invopap</span>
+          <span className="font-semibold text-ink/60">InvoSafi</span>
           {" · "}
           Designed by Benjamin Njami
         </p>

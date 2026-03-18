@@ -1,13 +1,13 @@
 # Resend Setup Checklist
 
-Complete these steps to enable email sharing in Invopap.
+Complete these steps to enable email sharing in InvoSafi.
 
 ## Phase 1: Resend Account Setup (5-10 minutes)
 
 - [ ] Go to https://resend.com
 - [ ] Create account and verify email
 - [ ] Navigate to API Keys / Integrations
-- [ ] Create new API key named "Invopap"
+- [ ] Create new API key named "InvoSafi"
 - [ ] Copy the API key (starts with `re_`)
 
 ## Phase 2: Environment Configuration (2 minutes)
@@ -18,7 +18,7 @@ Complete these steps to enable email sharing in Invopap.
   ```env
   RESEND_API_KEY=re_xxxxxxxxxxxxx
   RESEND_FROM_EMAIL=onboarding@resend.dev
-  RESEND_FROM_NAME=Invopap Documents
+  RESEND_FROM_NAME=InvoSafi Documents
   NEXT_PUBLIC_APP_URL=http://localhost:3000
   ```
 - [ ] Restart dev server: `npm run dev`

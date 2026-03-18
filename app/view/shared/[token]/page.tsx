@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 
   return {
-    title: `Shared ${typeLabels[doc.documentType] || "Document"} — Invopap`,
+    title: `Shared ${typeLabels[doc.documentType] || "Document"} — InvoSafi`,
     description: "View and download your shared document",
     robots: { index: false, follow: false },
   };

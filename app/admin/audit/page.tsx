@@ -85,7 +85,7 @@ export default function AdminAuditPage() {
         </div>
         <ExportButton
           data={entries as unknown as Record<string, unknown>[]}
-          filename="invopap-audit-log"
+          filename="invosafi-audit-log"
           columns={[
             { key: "createdAt", label: "Date" },
             { key: "actor", label: "Actor" },

@@ -108,7 +108,7 @@ export default function AdminPaymentsPage() {
           </button>
           <ExportButton
             data={payments as unknown as Record<string, unknown>[]}
-            filename="invopap-payments"
+            filename="invosafi-payments"
           />
         </div>
       </div>

@@ -98,14 +98,14 @@ function generateEmailHtml(params: {
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
     
     <p style="margin: 0; font-size: 13px; color: #666;">
-      This email was sent via <a href="https://invopap.com" style="color: #1f8ea3; text-decoration: none;">Invopap</a> — 
+      This email was sent via <a href="https://invosafi.com" style="color: #1f8ea3; text-decoration: none;">InvoSafi</a> — 
       Professional invoicing made simple.
     </p>
   </div>
   
   <div style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
     <p style="margin: 0;">
-      &copy; ${new Date().getFullYear()} Invopap. All rights reserved.
+      &copy; ${new Date().getFullYear()} InvoSafi. All rights reserved.
     </p>
   </div>
 </body>
@@ -134,8 +134,8 @@ The document is attached as a PDF file for your records.
 View Document Online: ${viewUrl}
 
 ---
-This email was sent via Invopap — Professional invoicing made simple.
-https://invopap.com
+This email was sent via InvoSafi — Professional invoicing made simple.
+https://invosafi.com
   `.trim();
 }
 

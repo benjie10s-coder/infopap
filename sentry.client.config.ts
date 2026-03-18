@@ -13,7 +13,7 @@ Sentry.init({
   replaysOnErrorSampleRate: 0.1,
 
   // Only report errors from our domain
-  allowUrls: [/invopap\.com/, /localhost/],
+  allowUrls: [/invosafi\.com/, /localhost/],
 
   // Filter out noisy errors
   ignoreErrors: [

@@ -6,7 +6,7 @@ const PurchaseOrderEditor = dynamic(
 );
 
 export const metadata = {
-  title: "Create Purchase Order – Invopap",
+  title: "Create Purchase Order – InvoSafi",
   description: "Create and send professional purchase orders instantly",
 };
 

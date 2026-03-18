@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
       phoneNumber: normalizedPhone,
       amount: DOWNLOAD_PRICE,
       accountReference: document.docNumber.substring(0, 12),
-      transactionDesc: "Invopap Doc",
+      transactionDesc: "InvoSafi Doc",
     });
     const tStkPush = Date.now();
 

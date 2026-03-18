@@ -1,5 +1,5 @@
 {
-  "name": "invopap-telegram-bot",
+  "name": "invosafi-telegram-bot",
   "version": "1.0.0",
   "description": "Telegram bot for creating documents with M-Pesa payment integration",
   "main": "src/index.ts",

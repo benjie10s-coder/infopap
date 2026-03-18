@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  invopap-bot:
+  invosafi-bot:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: invopap-telegram-bot
+    container_name: invosafi-telegram-bot
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       API_BASE_URL: ${API_BASE_URL:-http://host.docker.internal:3000}
@@ -13,12 +13,12 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
     restart: unless-stopped
     networks:
-      - invopap-network
+      - invosafi-network
 
   # Optional: Use Redis for scaling to multiple bot instances
   redis:
     image: redis:7-alpine
-    container_name: invopap-bot-redis
+    container_name: invosafi-bot-redis
     ports:
       - "6379:6379"
     healthcheck:
@@ -27,10 +27,10 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - invopap-network
+      - invosafi-network
     profiles:
       - with-redis
 
 networks:
-  invopap-network:
+  invosafi-network:
     driver: bridge

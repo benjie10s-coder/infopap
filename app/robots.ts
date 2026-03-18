@@ -10,6 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/admin/", "/dashboard/", "/auth/"],
       },
     ],
-    sitemap: `${process.env.NEXT_PUBLIC_APP_URL || "https://invopap.com"}/sitemap.xml`,
+    sitemap: `${process.env.NEXT_PUBLIC_APP_URL || "https://invosafi.com"}/sitemap.xml`,
   };
 }

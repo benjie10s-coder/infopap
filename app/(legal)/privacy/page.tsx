@@ -2,8 +2,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Invopap",
-  description: "Invopap Privacy Policy",
+  title: "Privacy Policy — InvoSafi",
+  description: "InvoSafi Privacy Policy",
 };
 
 export default function PrivacyPage() {
@@ -113,14 +113,14 @@ export default function PrivacyPage() {
 
       <h2>8. Children&apos;s Privacy</h2>
       <p>
-        Invopap is not intended for users under 18. We do not knowingly collect
+        InvoSafi is not intended for users under 18. We do not knowingly collect
         data from minors.
       </p>
 
       <h2>Contact</h2>
       <p>
         For privacy inquiries, contact our Data Protection Officer at{" "}
-        <a href="mailto:privacy@invopap.com">privacy@invopap.com</a>.
+        <a href="mailto:privacy@invosafi.com">privacy@invosafi.com</a>.
       </p>
     </article>
   );

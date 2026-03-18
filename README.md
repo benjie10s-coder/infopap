@@ -1,6 +1,6 @@
-# Invopap
+# InvoSafi
 
-Invopap is a pay-per-document platform that lets anyone — with or without an account — create professional invoices, receipts, cash sales, delivery notes, purchase orders, and quotations, then download a watermark-free PDF for **KSh 10** via M-Pesa STK Push.
+InvoSafi is a pay-per-document platform that lets anyone — with or without an account — create professional invoices, receipts, cash sales, delivery notes, purchase orders, and quotations, then download a watermark-free PDF for **KSh 10** via M-Pesa STK Push.
 
 ## Features
 
@@ -89,7 +89,7 @@ Copy `.env.example` to `.env.local`. Variables marked **required** will cause a 
 | `NEXT_PUBLIC_SUPABASE_URL` | **Yes** | Your Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **Yes** | Supabase anon/public key |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Yes** | Supabase service role key (server-only) |
-| `NEXT_PUBLIC_APP_URL` | Recommended | Public URL of this app (e.g. `https://invopap.com`) — used for CSRF, callbacks, and OAuth redirects |
+| `NEXT_PUBLIC_APP_URL` | Recommended | Public URL of this app (e.g. `https://invosafi.com`) — used for CSRF, callbacks, and OAuth redirects |
 | `MPESA_ENVIRONMENT` | M-Pesa | `sandbox` or `production` |
 | `MPESA_CONSUMER_KEY` | M-Pesa | Daraja app consumer key |
 | `MPESA_CONSUMER_SECRET` | M-Pesa | Daraja app consumer secret |
@@ -99,7 +99,7 @@ Copy `.env.example` to `.env.local`. Variables marked **required** will cause a 
 | `MPESA_CALLBACK_SECRET` | Recommended | Random secret to authenticate Safaricom callback requests |
 | `RESEND_API_KEY` | Email | Resend API key |
 | `RESEND_FROM_EMAIL` | Email | Sender address on a **Resend-verified domain** |
-| `RESEND_FROM_NAME` | Email | Sender display name (default: `Invopap`) |
+| `RESEND_FROM_NAME` | Email | Sender display name (default: `InvoSafi`) |
 | `UPSTASH_REDIS_REST_URL` | Recommended | Upstash Redis URL — required for multi-instance rate limiting |
 | `UPSTASH_REDIS_REST_TOKEN` | Recommended | Upstash Redis token |
 | `ADMIN_SECRET` | Recommended | Secret for `/admin` and `/api/admin` routes |

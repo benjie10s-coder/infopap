@@ -119,7 +119,7 @@ export function ViewActionsSidebar({
         <p className="text-xs text-ink/30 text-center">
           Powered by{" "}
           <a href="/" className="text-lagoon hover:underline">
-            Invopap
+            InvoSafi
           </a>
         </p>
       </div>

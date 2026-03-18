@@ -75,7 +75,7 @@ export function getRetryPaymentKeyboard(): TelegramBot.InlineKeyboardMarkup {
 
 // Message templates
 export function getWelcomeMessage(): string {
-  return `👋 *Welcome to InvoPap Bot!*
+  return `👋 *Welcome to InvoSafi Bot!*
 
 I help you create professional documents (invoices, quotations, receipts, and more) with just a few messages.
 

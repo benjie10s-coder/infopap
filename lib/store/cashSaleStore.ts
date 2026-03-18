@@ -258,7 +258,7 @@ export const useCashSaleStore = create<CashSaleStore>()(
         })),
     }),
     {
-      name: "invopap-cash-sale-store",
+      name: "invosafi-cash-sale-store",
       storage: createJSONStorage(() => {
         if (typeof window !== "undefined") return sessionStorage;
         return {

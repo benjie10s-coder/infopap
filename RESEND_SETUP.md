@@ -1,6 +1,6 @@
 # Resend Email Setup Guide
 
-This document guides you through setting up Resend for email sharing on Invopap.
+This document guides you through setting up Resend for email sharing on InvoSafi.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ This document guides you through setting up Resend for email sharing on Invopap.
 2. Click "Sign Up" and create your account
 3. Verify your email
 4. In the dashboard, go to **Integrations** → **API Keys** (or **Settings** → **API Keys**)
-5. Click "Create API Key" and name it "Invopap"
+5. Click "Create API Key" and name it "InvoSafi"
 6. Copy the key (starts with `re_`)
 
 ---
@@ -29,7 +29,7 @@ Use the Resend sandbox email for testing:
 ```env
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=onboarding@resend.dev
-RESEND_FROM_NAME=Invopap
+RESEND_FROM_NAME=InvoSafi
 ```
 
 Recipients must be verified emails in your Resend account for sandbox testing. See "Add Recipient Email" below.
@@ -50,7 +50,7 @@ Configure your own domain:
 ```env
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=documents@yourdomain.com
-RESEND_FROM_NAME=Invopap Documents
+RESEND_FROM_NAME=InvoSafi Documents
 ```
 
 ---
@@ -75,7 +75,7 @@ Create `.env.local` in project root:
 # Resend Configuration
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=onboarding@resend.dev
-RESEND_FROM_NAME=Invopap
+RESEND_FROM_NAME=InvoSafi
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -86,7 +86,7 @@ Set these in your deployment platform (Railway, Vercel, etc.):
 ```env
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=documents@yourdomain.com
-RESEND_FROM_NAME=Invopap Documents
+RESEND_FROM_NAME=InvoSafi Documents
 ```
 
 ---
@@ -238,7 +238,7 @@ Response:
 |----------|----------|---------|-------|
 | `RESEND_API_KEY` | Yes (for email) | `re_xxx` | Get from Resend dashboard |
 | `RESEND_FROM_EMAIL` | Yes | `onboarding@resend.dev` | Must be verified domain |
-| `RESEND_FROM_NAME` | No | `Invopap Documents` | Sender name in email |
+| `RESEND_FROM_NAME` | No | `InvoSafi Documents` | Sender name in email |
 | `NEXT_PUBLIC_APP_URL` | No | `http://localhost:3000` | Used in email links |
 
 ---

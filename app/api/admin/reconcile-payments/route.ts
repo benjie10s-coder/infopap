@@ -3,7 +3,7 @@
 // job but whose actual Daraja status was never confirmed.
 //
 // Trigger this periodically via an external cron — e.g. a Railway Cron Job:
-//   URL:    POST https://invopap.com/api/admin/reconcile-payments
+//   URL:    POST https://invosafi.com/api/admin/reconcile-payments
 //   Header: x-admin-secret: <ADMIN_SECRET>
 //   Schedule: every 5 minutes  ("*/5 * * * *")
 //

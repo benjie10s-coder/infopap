@@ -540,7 +540,7 @@ export class BotHandlers {
 
       await bot.sendMessage(
         chatId,
-        '🎉 *All done!*\n\nThank you for using InvoPap Bot.\n\nYou can create another document anytime. Just /start',
+        '🎉 *All done!*\n\nThank you for using InvoSafi Bot.\n\nYou can create another document anytime. Just /start',
         {
           parse_mode: 'Markdown',
         }

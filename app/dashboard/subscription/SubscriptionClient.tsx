@@ -68,7 +68,7 @@ export function SubscriptionClient({
       <header className="sticky top-0 z-50 border-b border-mist bg-white/90 backdrop-blur-sm">
         <div className="flex items-center justify-between px-6 py-3 pl-16">
           <Link href="/dashboard" className="text-xl font-display font-bold text-lagoon">
-            Invopap
+            InvoSafi
           </Link>
           <UserNav user={user} />
         </div>

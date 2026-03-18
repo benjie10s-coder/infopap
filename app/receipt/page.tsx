@@ -6,7 +6,7 @@ const ReceiptEditor = dynamic(
 );
 
 export const metadata = {
-  title: "Create Receipt – Invopap",
+  title: "Create Receipt – InvoSafi",
   description: "Create and send professional receipts instantly",
 };
 

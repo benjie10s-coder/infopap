@@ -123,6 +123,32 @@ export async function getUserById(userId: string): Promise<User | null> {
   return data;
 }
 
+export async function updateUser(
+  userId: string,
+  data: {
+    businessName?: string | null;
+    businessEmail?: string | null;
+    businessPhone?: string | null;
+    businessAddress?: string | null;
+    businessCity?: string | null;
+    businessZipCode?: string | null;
+    businessNumber?: string | null;
+    logoUrl?: string | null;
+    defaultCurrency?: string;
+    defaultTaxRate?: number;
+  }
+): Promise<User> {
+  const admin = getAdminClient();
+  const { data: updated, error } = await admin
+    .from("User")
+    .update(data)
+    .eq("id", userId)
+    .select("*")
+    .single();
+  if (error) throw new Error(`Failed to update user: ${error.message}`);
+  return updated!;
+}
+
 // =============================================================================
 // Invoice CRUD
 // =============================================================================

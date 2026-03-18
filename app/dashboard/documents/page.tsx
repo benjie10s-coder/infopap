@@ -5,7 +5,7 @@ import { getAdminClient } from "@/lib/supabase/admin";
 import { DocumentLibraryClient } from "./DocumentLibraryClient";
 
 export const metadata = {
-  title: "Document Library — Invopap",
+  title: "Document Library — InvoSafi",
   description: "Access all your documents for download and sharing",
 };
 

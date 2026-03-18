@@ -76,8 +76,8 @@ const nextConfig = {
 
 export default withSentryConfig(nextConfig, {
   // Sentry webpack plugin options
-  org: process.env.SENTRY_ORG || "invopap",
-  project: process.env.SENTRY_PROJECT || "invopap",
+  org: process.env.SENTRY_ORG || "invosafi",
+  project: process.env.SENTRY_PROJECT || "invosafi",
   silent: !process.env.CI,
   widenClientFileUpload: true,
   disableLogger: true,

@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!po) return { title: "Purchase Order Not Found" };
 
   return {
-    title: `${po.purchaseOrderNumber} — Invopap`,
-    description: `View ${po.documentTitle} ${po.purchaseOrderNumber} from ${po.fromName || "Invopap"}`,
+    title: `${po.purchaseOrderNumber} — InvoSafi`,
+    description: `View ${po.documentTitle} ${po.purchaseOrderNumber} from ${po.fromName || "InvoSafi"}`,
     robots: { index: false, follow: false },
   };
 }

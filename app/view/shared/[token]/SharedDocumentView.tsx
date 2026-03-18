@@ -215,12 +215,12 @@ export function SharedDocumentView({
         {/* Footer */}
         <div className="mt-8 pt-6 border-t border-slate-200 text-center">
           <a
-            href="https://invopap.com"
+            href="https://invosafi.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-slate-500 hover:text-teal-600 transition-colors"
           >
-            Powered by <span className="font-semibold">Invopap</span>
+            Powered by <span className="font-semibold">InvoSafi</span>
           </a>
         </div>
       </div>

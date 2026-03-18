@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       phoneNumber: normalizedPhone,
       amount: planConfig.price,
       accountReference: `SUB-${plan.substring(0, 7)}`,
-      transactionDesc: "Invopap Plan",
+      transactionDesc: "InvoSafi Plan",
       callbackUrl: getSubscriptionCallbackUrl(),
     });
 

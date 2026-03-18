@@ -1,6 +1,6 @@
 # Resend Integration Summary
 
-Your Invopap platform has a complete email sharing system already implemented with Resend. Here's what's set up:
+Your InvoSafi platform has a complete email sharing system already implemented with Resend. Here's what's set up:
 
 ## ✅ What's Already Implemented
 
@@ -45,7 +45,7 @@ Visit https://resend.com → Sign up → Create API Key
 # .env.local
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 RESEND_FROM_EMAIL=onboarding@resend.dev
-RESEND_FROM_NAME=Invopap Documents
+RESEND_FROM_NAME=InvoSafi Documents
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -79,7 +79,7 @@ node scripts/test-resend.js your-email@example.com
 ```env
 RESEND_API_KEY=re_xxxxx
 RESEND_FROM_EMAIL=onboarding@resend.dev
-RESEND_FROM_NAME=Invopap
+RESEND_FROM_NAME=InvoSafi
 ```
 ✓ Free  
 ✓ No domain needed  
@@ -89,7 +89,7 @@ RESEND_FROM_NAME=Invopap
 ```env
 RESEND_API_KEY=re_xxxxx
 RESEND_FROM_EMAIL=documents@yourdomain.com
-RESEND_FROM_NAME=Invopap Documents
+RESEND_FROM_NAME=InvoSafi Documents
 ```
 ✓ Send to any email  
 ✓ Professional domain  

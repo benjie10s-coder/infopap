@@ -30,7 +30,7 @@ export function useAdminAuth(): AdminAuth {
 
 export { AdminAuthContext };
 
-const STORAGE_KEY = "invopap_admin_auth";
+const STORAGE_KEY = "invosafi_admin_auth";
 
 export function useAdminAuthProvider(): AdminAuth {
   const [secret, setSecret] = useState("");

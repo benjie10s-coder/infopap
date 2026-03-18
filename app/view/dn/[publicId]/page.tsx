@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!dn) return { title: "Delivery Note Not Found" };
 
   return {
-    title: `${dn.deliveryNoteNumber} — Invopap`,
-    description: `View ${dn.documentTitle} ${dn.deliveryNoteNumber} from ${dn.fromName || "Invopap"}`,
+    title: `${dn.deliveryNoteNumber} — InvoSafi`,
+    description: `View ${dn.documentTitle} ${dn.deliveryNoteNumber} from ${dn.fromName || "InvoSafi"}`,
     robots: { index: false, follow: false },
   };
 }

@@ -1,15 +1,18 @@
 // components/InvoiceEditor.tsx — Main page orchestrator (responsive 2-column layout)
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useInvoiceStore } from "@/lib/store/invoiceStore";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useBusinessProfile } from "@/lib/hooks/useBusinessProfile";
+import { usePrefillPreference } from "@/lib/hooks/usePrefillPreference";
 import { InvoiceForm } from "@/components/InvoiceForm";
 import { DocumentPreviewShell } from "@/components/DocumentPreviewShell";
 import { InvoiceHtmlPreview } from "@/components/html-preview/InvoiceHtmlPreview";
 import { OptionsSidebar } from "@/components/OptionsSidebar";
 import { PaymentModal } from "@/components/PaymentModal";
+import { PrefillPrompt } from "@/components/PrefillPrompt";
 import { UserNav } from "@/components/UserNav";
 import { NarrowSidebarRail } from "@/components/LeftNavSidebar";
 import { FloatingOptionsButton } from "@/components/FloatingOptionsButton";
@@ -18,11 +21,38 @@ import { DownloadButton } from "@/components/DownloadButton";
 export function InvoiceEditor() {
   const store = useInvoiceStore();
   const { user, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading } = useBusinessProfile();
+  const { preference, setPreference } = usePrefillPreference();
 
   const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
   const [showPayment, setShowPayment] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showPrefillPrompt, setShowPrefillPrompt] = useState(false);
+  const prefillCheckedRef = useRef(false);
+
+  const applyPrefill = useCallback(() => {
+    if (!profile) return;
+    store.setField("from.name", profile.name);
+    store.setField("from.email", profile.email);
+    store.setField("from.phone", profile.phone);
+    store.setField("from.address", profile.address);
+    store.setField("from.city", profile.city);
+    store.setField("from.zipCode", profile.zipCode);
+    store.setField("from.businessNumber", profile.businessNumber);
+  }, [store, profile]);
+
+  useEffect(() => {
+    if (authLoading || profileLoading || !user) return;
+    if (prefillCheckedRef.current) return;
+    if (store.currentInvoiceId !== null || store.from.name.trim() !== "") return;
+    prefillCheckedRef.current = true;
+    if (preference === "always" && profile) {
+      applyPrefill();
+    } else if (preference === "ask") {
+      setShowPrefillPrompt(true);
+    }
+  }, [authLoading, profileLoading, user, preference, profile, store.currentInvoiceId, store.from.name, applyPrefill]);
 
   // Save invoice to API, return the publicId
   const saveInvoice = useCallback(async (): Promise<string | null> => {
@@ -151,7 +181,7 @@ export function InvoiceEditor() {
           <div className="flex items-center justify-between h-12 sm:h-14">
             <div className="flex items-center shrink-0">
               <Link href="/" className="text-lg sm:text-xl font-display font-bold text-lagoon">
-                Invopap
+                InvoSafi
               </Link>
             </div>
 
@@ -298,6 +328,19 @@ export function InvoiceEditor() {
           publicId={store.currentPublicId}
           onClose={() => setShowPayment(false)}
           onSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {/* ─── Prefill prompt ─── */}
+      {showPrefillPrompt && (
+        <PrefillPrompt
+          hasProfile={!!profile?.name}
+          onAccept={() => {
+            setShowPrefillPrompt(false);
+            applyPrefill();
+          }}
+          onDecline={() => setShowPrefillPrompt(false)}
+          onRemember={setPreference}
         />
       )}
     </div>

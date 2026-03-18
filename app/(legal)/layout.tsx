@@ -14,7 +14,7 @@ export default function LegalLayout({
             href="/"
             className="text-xl font-display font-bold text-lagoon"
           >
-            Invopap
+            InvoSafi
           </Link>
           <div className="flex items-center gap-4 text-sm text-ink/50">
             <Link href="/terms" className="hover:text-ink transition-colors">
@@ -31,7 +31,7 @@ export default function LegalLayout({
       </nav>
       <main className="max-w-3xl mx-auto px-6 py-12">{children}</main>
       <footer className="border-t border-mist text-center py-6 text-xs text-ink/30">
-        © {new Date().getFullYear()} Invopap. All rights reserved.
+        © {new Date().getFullYear()} InvoSafi. All rights reserved.
       </footer>
     </div>
   );

@@ -278,7 +278,7 @@ export const usePurchaseOrderStore = create<PurchaseOrderStore>()(
         })),
     }),
     {
-      name: "invopap-purchase-order-store",
+      name: "invosafi-purchase-order-store",
       storage: createJSONStorage(() => {
         if (typeof window !== "undefined") return sessionStorage;
         return {

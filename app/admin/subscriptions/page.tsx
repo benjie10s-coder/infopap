@@ -79,7 +79,7 @@ export default function AdminSubscriptionsPage() {
         </div>
         <ExportButton
           data={subscriptions as unknown as Record<string, unknown>[]}
-          filename="invopap-subscriptions"
+          filename="invosafi-subscriptions"
         />
       </div>
 

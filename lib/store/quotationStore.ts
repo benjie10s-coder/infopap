@@ -252,7 +252,7 @@ export const useQuotationStore = create<QuotationStore>()(
         })),
     }),
     {
-      name: "invopap-quotation-store",
+      name: "invosafi-quotation-store",
       storage: createJSONStorage(() => {
         if (typeof window !== "undefined") return sessionStorage;
         return {

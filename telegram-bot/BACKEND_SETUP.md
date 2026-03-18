@@ -172,8 +172,8 @@ After applying Option B (if needed):
 ```bash
 # Test 1: Web user still works (via cookie)
 curl -X POST http://localhost:3000/api/invoices \
-  -H "Cookie: invopap_guest_session=cookie-value-123" \
-  -b "invopap_guest_session=cookie-value-123" \
+  -H "Cookie: invosafi_guest_session=cookie-value-123" \
+  -b "invosafi_guest_session=cookie-value-123" \
   -H "Content-Type: application/json" \
   -d '{"fromName":"Web","toName":"User","lineItems":[...]}'
 

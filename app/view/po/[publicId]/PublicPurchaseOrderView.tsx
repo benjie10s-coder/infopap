@@ -171,7 +171,7 @@ export function PublicPurchaseOrderView({
         <div className="flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-2">
             <Link href="/" className="text-xl font-display font-bold text-lagoon">
-              Invopap
+              InvoSafi
             </Link>
           </div>
           <div className="flex items-center gap-2">
@@ -236,7 +236,7 @@ export function PublicPurchaseOrderView({
       {/* Footer — full width, outside the sidebar-padded area */}
       <footer className="text-center text-xs text-ink/30 py-6 border-t border-mist">
         Powered by{" "}
-        <a href="/" className="text-lagoon hover:underline">Invopap</a>{" "}
+        <a href="/" className="text-lagoon hover:underline">InvoSafi</a>{" "}
         · <a href="/terms" className="hover:underline">Terms</a>{" "}
         · <a href="/privacy" className="hover:underline">Privacy</a>
       </footer>

@@ -28,14 +28,14 @@ export function useSidebarProvider(defaultOpen = false): SidebarState {
 
   // Persist to localStorage
   useEffect(() => {
-    const stored = localStorage.getItem("invopap-sidebar");
+    const stored = localStorage.getItem("invosafi-sidebar");
     if (stored !== null) {
       setIsOpen(stored === "true");
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("invopap-sidebar", String(isOpen));
+    localStorage.setItem("invosafi-sidebar", String(isOpen));
   }, [isOpen]);
 
   const toggle = useCallback(() => setIsOpen((prev) => !prev), []);

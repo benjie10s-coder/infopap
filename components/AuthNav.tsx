@@ -10,7 +10,7 @@ export function AuthNav() {
   return (
     <nav className="flex items-center justify-between px-6 py-4 border-b border-mist/50">
       <Link href="/" className="flex items-center gap-2 text-ink font-display text-xl font-bold">
-        <span className="text-lagoon">Invopap</span>
+        <span className="text-lagoon">InvoSafi</span>
       </Link>
       <div className="flex items-center gap-4 text-sm">
         <Link

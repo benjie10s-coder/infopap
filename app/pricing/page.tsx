@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { PLANS, PAY_AS_YOU_GO } from "@/lib/plans";
 
 export const metadata: Metadata = {
-  title: "Pricing — Invopap",
+  title: "Pricing — InvoSafi",
   description:
     "Simple, transparent pricing. Pay KSh 10 per document or save with a subscription plan starting at KSh 500.",
 };
@@ -21,7 +21,7 @@ export default function PricingPage() {
       <header className="sticky top-0 z-30 border-b border-mist bg-white/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link href="/" className="text-xl font-display font-bold text-lagoon">
-            Invopap
+            InvoSafi
           </Link>
           <div className="flex items-center gap-3">
             <Link

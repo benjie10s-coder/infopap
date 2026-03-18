@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!invoice) return { title: "Invoice Not Found" };
 
   return {
-    title: `${invoice.invoiceNumber} — Invopap`,
-    description: `View ${invoice.documentTitle} ${invoice.invoiceNumber} from ${invoice.fromName || "Invopap"}`,
+    title: `${invoice.invoiceNumber} — InvoSafi`,
+    description: `View ${invoice.documentTitle} ${invoice.invoiceNumber} from ${invoice.fromName || "InvoSafi"}`,
     robots: { index: false, follow: false },
   };
 }

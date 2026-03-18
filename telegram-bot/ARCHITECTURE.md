@@ -1,6 +1,6 @@
 # Architecture & Design
 
-This document explains the technical architecture of the InvoPap Telegram Bot.
+This document explains the technical architecture of the InvoSafi Telegram Bot.
 
 ## System Architecture
 

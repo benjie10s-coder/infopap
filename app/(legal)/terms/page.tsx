@@ -2,8 +2,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Invopap",
-  description: "Invopap Terms of Service",
+  title: "Terms of Service — InvoSafi",
+  description: "InvoSafi Terms of Service",
 };
 
 export default function TermsPage() {
@@ -13,14 +13,14 @@ export default function TermsPage() {
 
       <h2>1. Acceptance of Terms</h2>
       <p>
-        Welcome to Invopap (&quot;the Service&quot;). By accessing or using the Service, you
+        Welcome to InvoSafi (&quot;the Service&quot;). By accessing or using the Service, you
         agree to be bound by these Terms of Service. If you do not agree with
         any part of these terms, you must not use the Service.
       </p>
 
       <h2>2. Service Description</h2>
       <p>
-        Invopap is a document generation platform designed to allow users to
+        InvoSafi is a document generation platform designed to allow users to
         create professional invoices, receipts, estimates, and quotes. The
         Service provides flexibility by allowing users to create documents
         without an account (as guests) or to sign up for a persistent, registered
@@ -48,20 +48,20 @@ export default function TermsPage() {
       </p>
       <p>
         <strong>Premium Downloads:</strong> Downloading a clean, final PDF
-        document (without the Invopap watermark) requires a one-time payment of
+        document (without the InvoSafi watermark) requires a one-time payment of
         <strong> KSh 10 per document</strong>.
       </p>
       <p>
         <strong>Billing Responsibility:</strong> This fee is charged strictly to
         the document creator. The recipient of your invoice, receipt, estimate,
-        or quote will never be charged by Invopap to view or receive the
+        or quote will never be charged by InvoSafi to view or receive the
         document.
       </p>
 
       <h2>5. Payments and Refunds</h2>
       <p>
         <strong>Payment Processor:</strong> All payments are processed securely
-        via Safaricom M-Pesa. By completing a payment on Invopap, you also agree
+        via Safaricom M-Pesa. By completing a payment on InvoSafi, you also agree
         to be bound by Safaricom&apos;s terms of service.
       </p>
       <p>
@@ -75,7 +75,7 @@ export default function TermsPage() {
       <p>
         You retain full ownership of all content you enter into your documents,
         including business names, financial amounts, client details, logos, and
-        images. By using the Service, you grant Invopap a limited,
+        images. By using the Service, you grant InvoSafi a limited,
         non-exclusive license to store, process, and display this content solely
         for the purpose of generating and delivering your documents.
       </p>
@@ -104,14 +104,14 @@ export default function TermsPage() {
         warranties of any kind, whether express or implied.
       </p>
       <p>
-        Invopap is not a specialized accounting or legal firm. We are not liable
+        InvoSafi is not a specialized accounting or legal firm. We are not liable
         for any business, financial, or tax decisions made based on the documents
         generated using our Service.
       </p>
       <p>
-        In no event shall Invopap&apos;s total maximum liability to you for any claims
+        In no event shall InvoSafi&apos;s total maximum liability to you for any claims
         arising out of your use of the Service exceed the total amount paid by
-        you to Invopap in the preceding 12 months.
+        you to InvoSafi in the preceding 12 months.
       </p>
 
       <h2>10. Governing Law and Dispute Resolution</h2>

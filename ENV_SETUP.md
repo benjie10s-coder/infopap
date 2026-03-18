@@ -1,6 +1,6 @@
 # Environment Variables — Production Setup Guide
 
-All environment variables for deploying InvoPap on Railway (or any Node.js host).
+All environment variables for deploying InvoSafi on Railway (or any Node.js host).
 
 ---
 
@@ -38,8 +38,8 @@ All environment variables for deploying InvoPap on Railway (or any Node.js host)
 
 | Variable | Example | Purpose |
 |---|---|---|
-| `NEXT_PUBLIC_APP_URL` | `https://invopap.com` | Used for M-Pesa callback URL construction (`{APP_URL}/api/payments/callback`) and public links |
-| `MPESA_CALLBACK_URL` | `https://invopap.com/api/payments/callback` | Explicit override for M-Pesa STK Push callback URL. If not set, auto-derived from `NEXT_PUBLIC_APP_URL` |
+| `NEXT_PUBLIC_APP_URL` | `https://invosafi.com` | Used for M-Pesa callback URL construction (`{APP_URL}/api/payments/callback`) and public links |
+| `MPESA_CALLBACK_URL` | `https://invosafi.com/api/payments/callback` | Explicit override for M-Pesa STK Push callback URL. If not set, auto-derived from `NEXT_PUBLIC_APP_URL` |
 | `MPESA_CALLBACK_SECRET` | `mysecret123` | Shared secret appended to callback URL (`?secret=xxx`) to verify callbacks are from your system |
 | `UPSTASH_REDIS_REST_URL` | `https://xxx.upstash.io` | [Upstash](https://upstash.com/) Redis REST URL for distributed rate limiting |
 | `UPSTASH_REDIS_REST_TOKEN` | `AXxx…` | Upstash Redis REST token |

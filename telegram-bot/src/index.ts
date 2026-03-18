@@ -14,7 +14,7 @@ if (!TELEGRAM_BOT_TOKEN) {
 
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 
-console.log('🤖 InvoPap Telegram Bot is starting...');
+console.log('🤖 InvoSafi Telegram Bot is starting...');
 
 // ============ COMMAND HANDLERS ============
 
@@ -42,7 +42,7 @@ bot.onText(/^\/help/, async (msg) => {
     const { chat } = msg;
     if (!chat) return;
 
-    const helpMessage = `✅ *InvoPap Bot Help*
+    const helpMessage = `✅ *InvoSafi Bot Help*
 
 *Supported Document Types:*
 • 📄 Invoice - Formal bill for goods/services

@@ -1,11 +1,11 @@
 # Quick Start Guide
 
-Get the InvoPap Telegram Bot running in 5 minutes.
+Get the InvoSafi Telegram Bot running in 5 minutes.
 
 ## Prerequisites
 
 - Node.js 20+ (or Docker)
-- InvoPap Next.js app running (backend)
+- InvoSafi Next.js app running (backend)
 - Telegram bot token from [@BotFather](https://t.me/botfather)
 
 ## Step 1: Get Bot Token
@@ -46,8 +46,8 @@ npm run dev
 
 **Option B: With Docker**
 ```bash
-docker build -t invopap-bot .
-docker run -e TELEGRAM_BOT_TOKEN=your_token invopap-bot
+docker build -t invosafi-bot .
+docker run -e TELEGRAM_BOT_TOKEN=your_token invosafi-bot
 ```
 
 **Option C: With Docker Compose**
@@ -146,7 +146,7 @@ npm run build           # Compile TypeScript
 
 # Docker
 docker compose up -d    # Start with Docker Compose
-docker logs -f invopap-telegram-bot  # View logs
+docker logs -f invosafi-telegram-bot  # View logs
 docker compose down     # Stop
 ```
 

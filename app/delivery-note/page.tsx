@@ -6,7 +6,7 @@ const DeliveryNoteEditor = dynamic(
 );
 
 export const metadata = {
-  title: "Create Delivery Note – Invopap",
+  title: "Create Delivery Note – InvoSafi",
   description: "Create and send professional delivery notes instantly",
 };
 

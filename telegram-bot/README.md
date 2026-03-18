@@ -1,4 +1,4 @@
-# InvoPap Telegram Bot
+# InvoSafi Telegram Bot
 
 A feature-rich Telegram bot that allows users to create professional documents (invoices, quotations, receipts, etc.) directly from Telegram, with M-Pesa payment integration.
 
@@ -40,7 +40,7 @@ A feature-rich Telegram bot that allows users to create professional documents (
 
 - Node.js 20+ or Docker
 - Telegram Bot Token (create via [@BotFather](https://t.me/botfather) on Telegram)
-- Running InvoPap Next.js backend (for API calls)
+- Running InvoSafi Next.js backend (for API calls)
 - M-Pesa configured in main backend
 
 ### Local Development
@@ -77,16 +77,16 @@ A feature-rich Telegram bot that allows users to create professional documents (
 
 1. **Build image:**
    ```bash
-   docker build -t invopap-telegram-bot .
+   docker build -t invosafi-telegram-bot .
    ```
 
 2. **Run container:**
    ```bash
    docker run -d \
-     --name invopap-bot \
+     --name invosafi-bot \
      -e TELEGRAM_BOT_TOKEN=your_token \
      -e API_BASE_URL=https://yourdomain.com \
-     invopap-telegram-bot
+     invosafi-telegram-bot
    ```
 
 3. **Using Docker Compose (recommended):**
@@ -117,7 +117,7 @@ A feature-rich Telegram bot that allows users to create professional documents (
 #### Heroku
 
 ```bash
-heroku create invopap-telegram-bot
+heroku create invosafi-telegram-bot
 heroku config:set TELEGRAM_BOT_TOKEN=your_token API_BASE_URL=https://yourdomain.com
 git push heroku main
 ```
@@ -402,4 +402,4 @@ For issues, questions, or feature requests:
 
 ---
 
-**Built with ❤️ for InvoPap Platform**
+**Built with ❤️ for InvoSafi Platform**

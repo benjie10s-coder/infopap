@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 
-file_path = '/workspaces/invopap/telegram-bot/src/handlers.ts'
+file_path = '/workspaces/invosafi/telegram-bot/src/handlers.ts'
 
 with open(file_path, 'r', encoding='utf-8') as f:
     content = f.read()

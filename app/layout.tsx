@@ -20,21 +20,21 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Invopap — Invoice & Receipt Generator for Kenya",
+  title: "InvoSafi — Invoice & Receipt Generator for Kenya",
   description:
     "Create professional invoices, receipts, and quotes instantly. No signup required. Pay KSh 10 via M-Pesa to download. Built for Kenyan businesses.",
   openGraph: {
-    title: "Invopap — Invoice & Receipt Generator",
+    title: "InvoSafi — Invoice & Receipt Generator",
     description:
       "Create and download professional business documents instantly via M-Pesa.",
-    url: "https://invopap.com",
-    siteName: "Invopap",
+    url: "https://invosafi.com",
+    siteName: "InvoSafi",
     type: "website",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Invopap — Invoice Generator for Kenya",
+    title: "InvoSafi — Invoice Generator for Kenya",
     description: "Professional invoices in seconds. Pay KSh 10 via M-Pesa.",
   },
 };

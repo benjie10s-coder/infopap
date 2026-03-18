@@ -1,4 +1,4 @@
-# Implementation Summary: InvoPap Telegram Bot
+# Implementation Summary: InvoSafi Telegram Bot
 
 ## 🎉 What Was Built
 
@@ -7,7 +7,7 @@ A complete, production-ready Telegram bot microservice that enables users to cre
 ## 📁 Project Structure
 
 ```
-/workspaces/invopap/telegram-bot/
+/workspaces/invosafi/telegram-bot/
 ├── src/
 │   ├── index.ts                 ⭐ Bot entry point & event handlers
 │   ├── types.ts                 📋 TypeScript interfaces & types
@@ -144,7 +144,7 @@ Content-Type: application/json
 ### API Compatibility
 ```
 Web User (Cookie)              Telegram Bot (Header)
-invopap_guest_session=abc123   x-guest-session-id: abc123
+invosafi_guest_session=abc123   x-guest-session-id: abc123
         ↓                                ↓
     Next.js getTenantContext()
         ↓
@@ -163,8 +163,8 @@ npm run dev
 
 ### Docker Deployment
 ```bash
-docker build -t invopap-bot .
-docker run -e TELEGRAM_BOT_TOKEN=xxx invopap-bot
+docker build -t invosafi-bot .
+docker run -e TELEGRAM_BOT_TOKEN=xxx invosafi-bot
 ```
 
 ### Production (Railway.app, etc.)
@@ -312,7 +312,7 @@ A: Not automatically (separate sessions). Could add feature to link them.
 
 ### For DevOps
 - Deploy using [docker-compose.yml](./docker-compose.yml)
-- Monitor logs: `docker logs invopap-telegram-bot`
+- Monitor logs: `docker logs invosafi-telegram-bot`
 - See [CHECKLIST.md](./CHECKLIST.md) for deployment steps
 
 ### For Business
@@ -335,6 +335,6 @@ A: Not automatically (separate sessions). Could add feature to link them.
 
 ---
 
-**Built with ❤️ for InvoPap Platform**  
+**Built with ❤️ for InvoSafi Platform**  
 *Implementation Date: February 2026*  
 *Version: 1.0.0*

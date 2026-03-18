@@ -229,7 +229,7 @@ export const useDeliveryNoteStore = create<DeliveryNoteStore>()(
         })),
     }),
     {
-      name: "invopap-delivery-note-store",
+      name: "invosafi-delivery-note-store",
       storage: createJSONStorage(() => {
         if (typeof window !== "undefined") return sessionStorage;
         return {

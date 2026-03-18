@@ -1,6 +1,6 @@
 # Resend Monitoring & Debugging Guide
 
-This guide helps you monitor and troubleshoot email delivery in your Invopap platform.
+This guide helps you monitor and troubleshoot email delivery in your InvoSafi platform.
 
 ## 📊 Monitoring Dashboard
 

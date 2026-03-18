@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
 
-const GUEST_COOKIE_NAME = "invopap_guest_session";
+const GUEST_COOKIE_NAME = "invosafi_guest_session";
 const GUEST_COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
 
 export interface TenantContext {

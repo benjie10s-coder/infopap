@@ -66,7 +66,7 @@ export default function AdminDocumentTypePage() {
         </div>
         <ExportButton
           data={documents as unknown as Record<string, unknown>[]}
-          filename={`invopap-${docType.toLowerCase().replace(/\s+/g, "-")}s`}
+          filename={`invosafi-${docType.toLowerCase().replace(/\s+/g, "-")}s`}
         />
       </div>
 

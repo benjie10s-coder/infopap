@@ -46,7 +46,7 @@ export function DashboardClient({
             href="/"
             className="text-xl font-display font-bold text-lagoon"
           >
-            Invopap
+            InvoSafi
           </Link>
           <UserNav user={user} />
         </div>

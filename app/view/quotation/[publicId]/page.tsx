@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!quotation) return { title: "Quotation Not Found" };
 
   return {
-    title: `${quotation.quotationNumber} — Invopap`,
-    description: `View ${quotation.documentTitle} ${quotation.quotationNumber} from ${quotation.fromName || "Invopap"}`,
+    title: `${quotation.quotationNumber} — InvoSafi`,
+    description: `View ${quotation.documentTitle} ${quotation.quotationNumber} from ${quotation.fromName || "InvoSafi"}`,
     robots: { index: false, follow: false },
   };
 }

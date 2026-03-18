@@ -94,7 +94,7 @@ export default function AdminDocumentsPage() {
         </div>
         <ExportButton
           data={typeStats as unknown as Record<string, unknown>[]}
-          filename="invopap-document-stats"
+          filename="invosafi-document-stats"
         />
       </div>
 

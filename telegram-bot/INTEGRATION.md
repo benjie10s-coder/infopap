@@ -1,6 +1,6 @@
 # Telegram Bot Integration Guide
 
-This document explains how the Telegram bot integrates with your existing InvoPap Next.js backend and what changes (if any) might be needed.
+This document explains how the Telegram bot integrates with your existing InvoSafi Next.js backend and what changes (if any) might be needed.
 
 ## Backend Compatibility
 
@@ -18,7 +18,7 @@ The bot is designed to work with your existing API without requiring changes. It
 
 **Current Setup (Web):**
 - User visits platform without login
-- Browser gets `invopap_guest_session` cookie (httpOnly, 30-day TTL)
+- Browser gets `invosafi_guest_session` cookie (httpOnly, 30-day TTL)
 - All API calls automatically include cookie
 
 **Bot Setup (New):**
@@ -33,7 +33,7 @@ The bot is designed to work with your existing API without requiring changes. It
 **Web Requests (existing):**
 ```http
 POST /api/invoices
-Cookie: invopap_guest_session=abc123def456
+Cookie: invosafi_guest_session=abc123def456
 Content-Type: application/json
 
 {
@@ -169,7 +169,7 @@ Your current multi-tenant design is preserved:
 
 | Layer | Implementation | Bot Support |
 |-------|---|---|
-| **Cookie-based session (web)** | `invopap_guest_session` | ✅ Works as-is |
+| **Cookie-based session (web)** | `invosafi_guest_session` | ✅ Works as-is |
 | **Header-based session (bot)** | `x-guest-session-id` | ✅ With option B above |
 | **Supabase RLS policies** | `guestSessionId` column | ✅ No changes |
 | **Database queries** | `WHERE guestSessionId = $1` | ✅ Automatic |
@@ -338,10 +338,10 @@ LOG_LEVEL=debug npm start
 
 ```bash
 # Check bot container logs
-docker logs invopap-telegram-bot
+docker logs invosafi-telegram-bot
 
 # Monitor memory
-docker stats invopap-telegram-bot
+docker stats invosafi-telegram-bot
 
 # Check API calls
 # → View Next.js logs for API requests from bot
@@ -353,7 +353,7 @@ docker stats invopap-telegram-bot
 
 ```bash
 # Docker automatically restarts
-docker run -d --restart=always invopap-telegram-bot
+docker run -d --restart=always invosafi-telegram-bot
 
 # Or with compose
 docker-compose up -d  # --restart=always by default

@@ -283,7 +283,7 @@ export function AdminSidebarOverlay({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
           <Link href="/admin" className="text-xl font-display font-bold text-lagoon" onClick={onClose}>
-            Invopap Admin
+            InvoSafi Admin
           </Link>
           <button
             onClick={onClose}

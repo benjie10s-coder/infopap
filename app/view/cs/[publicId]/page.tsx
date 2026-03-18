@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!sale) return { title: "Cash Sale Not Found" };
 
   return {
-    title: `${sale.cashSaleNumber} — Invopap`,
-    description: `View ${sale.documentTitle} ${sale.cashSaleNumber} from ${sale.fromName || "Invopap"}`,
+    title: `${sale.cashSaleNumber} — InvoSafi`,
+    description: `View ${sale.documentTitle} ${sale.cashSaleNumber} from ${sale.fromName || "InvoSafi"}`,
     robots: { index: false, follow: false },
   };
 }

@@ -8,7 +8,7 @@ const { Resend } = require("resend");
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-const FROM_NAME = process.env.RESEND_FROM_NAME || "Invopap";
+const FROM_NAME = process.env.RESEND_FROM_NAME || "InvoSafi";
 
 console.log("\n=== Resend Email Configuration Test ===\n");
 
@@ -30,7 +30,7 @@ const resend = new Resend(RESEND_API_KEY);
 const testEmail = {
   from: `${FROM_NAME} <${FROM_EMAIL}>`,
   to: process.argv[2] || "delivered@resend.dev", // Use arg or Resend test email
-  subject: "Invopap Email Configuration Test",
+  subject: "InvoSafi Email Configuration Test",
   html: `
 <!DOCTYPE html>
 <html>
@@ -39,7 +39,7 @@ const testEmail = {
   <title>Test Email</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px;">
-  <h2>Invopap Email Configuration Test</h2>
+  <h2>InvoSafi Email Configuration Test</h2>
   <p>This is a test email to verify your Resend setup is working correctly.</p>
   <p><strong>Test Details:</strong></p>
   <ul>
@@ -50,13 +50,13 @@ const testEmail = {
   <p>If you received this email, your Resend configuration is working! ✓</p>
   <hr style="margin: 20px 0;">
   <p style="font-size: 12px; color: #666;">
-    This is a test email from Invopap. Please ignore if you didn't expect this.
+    This is a test email from InvoSafi. Please ignore if you didn't expect this.
   </p>
 </body>
 </html>
   `,
   text: `
-Invopap Email Configuration Test
+InvoSafi Email Configuration Test
 
 This is a test email to verify your Resend setup is working correctly.
 

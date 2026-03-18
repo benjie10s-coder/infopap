@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Invopap",
-    short_name: "Invopap",
+    name: "InvoSafi",
+    short_name: "InvoSafi",
     description: "Invoice & Receipt Generator for Kenya",
     start_url: "/",
     display: "standalone",

@@ -575,3 +575,22 @@ export const ListDeliveryNotesSchema = z.object({
   orderDir: z.enum(["asc", "desc"]).optional().default("desc"),
   cursor: z.string().optional(),
 });
+
+// =============================================================================
+// User Profile Schema
+// =============================================================================
+
+export const UserProfileSchema = z.object({
+  businessName: z.string().max(200).optional().nullable(),
+  businessEmail: z.string().email().max(254).optional().nullable(),
+  businessPhone: z.string().max(30).optional().nullable(),
+  businessAddress: z.string().max(500).optional().nullable(),
+  businessCity: z.string().max(100).optional().nullable(),
+  businessZipCode: z.string().max(20).optional().nullable(),
+  businessNumber: z.string().max(50).optional().nullable(),
+  logoUrl: z.string().url().max(2000).optional().nullable(),
+  defaultCurrency: z.enum(CURRENCY_CODES).optional(),
+  defaultTaxRate: z.number().min(0).max(100).optional(),
+});
+
+export type UserProfileInput = z.infer<typeof UserProfileSchema>;
