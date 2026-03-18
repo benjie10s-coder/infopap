@@ -16,6 +16,7 @@ export interface STKPushRequest {
   amount: number;
   accountReference: string; // Max 12 chars
   transactionDesc: string; // Max 13 chars
+  callbackUrl?: string; // Override default callback URL (e.g. for subscriptions)
 }
 
 export interface STKPushResponse {
@@ -269,7 +270,7 @@ export async function initiateSTKPush(
   // Generate password: Base64(Shortcode + Passkey + Timestamp)
   const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString("base64");
 
-  const callbackUrl = getCallbackUrl();
+  const callbackUrl = request.callbackUrl || getCallbackUrl();
 
   const body = {
     BusinessShortCode: shortcode,

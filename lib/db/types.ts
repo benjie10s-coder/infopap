@@ -619,3 +619,45 @@ export interface QuotationWithItems extends Quotation {
   lineItems: QuotationLineItem[];
   photos: QuotationPhoto[];
 }
+
+// =============================================================================
+// Subscription Types
+// =============================================================================
+
+export type SubscriptionPlan = "BASIC" | "GROWTH" | "SCALE";
+export type SubscriptionStatus = "PENDING" | "ACTIVE" | "EXHAUSTED" | "EXPIRED" | "CANCELLED";
+
+export interface Subscription {
+  id: string;
+  userId: string;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  documentsLimit: number;
+  documentsUsed: number;
+  amountPaid: number;
+  phoneNumber: string | null;
+  purchasedAt: string | null;
+  expiresAt: string | null;
+  renewedFromId: string | null;
+  merchantRequestId: string | null;
+  checkoutRequestId: string | null;
+  mpesaReceiptNumber: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubscriptionUsageResult {
+  sub_id: string;
+  sub_plan: string;
+  documents_limit: number;
+  documents_used: number;
+  documents_remaining: number;
+}
+
+export interface SubscriptionActivationResult {
+  sub_id: string;
+  sub_plan: string;
+  sub_status: string;
+  documents_limit: number;
+  expires_at: string;
+}

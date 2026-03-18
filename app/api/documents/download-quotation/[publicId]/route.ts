@@ -1,9 +1,10 @@
 // app/api/documents/download-quotation/[publicId]/route.ts — Quotation PDF download
 import { NextRequest, NextResponse } from "next/server";
-import { getQuotationByPublicId, consumeQuotationDownload } from "@/lib/db";
+import { getQuotationByPublicId, consumeQuotationDownload, markQuotationPaid, useSubscriptionDocument } from "@/lib/db";
 import { renderQuotationPdf } from "@/lib/quotation-pdf";
 import { checkRateLimit, publicReadLimiter } from "@/lib/rate-limit";
 import { createRequestLogger } from "@/lib/logger";
+import { getTenantContext } from "@/lib/session";
 
 export const maxDuration = 30;
 
@@ -23,6 +24,46 @@ export async function GET(
         { error: "Quotation not found" },
         { status: 404 }
       );
+    }
+
+    // Check subscription before consume
+    if (quotation.userId) {
+      const tenant = await getTenantContext();
+      if (tenant.isAuthenticated && tenant.userId === quotation.userId) {
+        const usage = await useSubscriptionDocument(tenant.userId);
+        if (usage) {
+          await markQuotationPaid(quotation.id);
+          logger.info("subscription_doc_used", {
+            publicId: params.publicId,
+            plan: usage.sub_plan,
+            remaining: usage.documents_remaining,
+            docType: "QUOTATION",
+          });
+          let pdfBuffer: Buffer;
+          try {
+            pdfBuffer = await renderQuotationPdf(quotation, { showWatermark: false });
+          } catch (error) {
+            if (error instanceof Error && error.message === "PDF_BUSY") {
+              return NextResponse.json(
+                { error: "Server busy generating PDFs, please retry in a few seconds" },
+                { status: 503, headers: { "Retry-After": "5" } }
+              );
+            }
+            throw error;
+          }
+          const filename = `${quotation.quotationNumber}.pdf`;
+          logger.done("qt_pdf_download", { publicId: params.publicId, quotationId: quotation.id, size: pdfBuffer.length });
+          return new Response(new Uint8Array(pdfBuffer), {
+            status: 200,
+            headers: {
+              "Content-Type": "application/pdf",
+              "Content-Disposition": `attachment; filename="${filename}"`,
+              "Content-Length": String(pdfBuffer.length),
+              "Cache-Control": "no-store",
+            },
+          });
+        }
+      }
     }
 
     // Atomic claim: flip isPaid from true to false, returns false if already consumed

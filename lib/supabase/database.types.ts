@@ -1841,6 +1841,78 @@ export interface Database {
           },
         ];
       };
+      Subscription: {
+        Row: {
+          id: string;
+          userId: string;
+          plan: string;
+          status: string;
+          documentsLimit: number;
+          documentsUsed: number;
+          amountPaid: number;
+          phoneNumber: string;
+          purchasedAt: string | null;
+          expiresAt: string | null;
+          renewedFromId: string | null;
+          merchantRequestId: string | null;
+          checkoutRequestId: string | null;
+          mpesaReceiptNumber: string | null;
+          createdAt: string;
+          updatedAt: string;
+        };
+        Insert: {
+          id: string;
+          userId: string;
+          plan: string;
+          status?: string;
+          documentsLimit: number;
+          documentsUsed?: number;
+          amountPaid: number;
+          phoneNumber: string;
+          purchasedAt?: string | null;
+          expiresAt?: string | null;
+          renewedFromId?: string | null;
+          merchantRequestId?: string | null;
+          checkoutRequestId?: string | null;
+          mpesaReceiptNumber?: string | null;
+          createdAt?: string;
+          updatedAt?: string;
+        };
+        Update: {
+          id?: string;
+          userId?: string;
+          plan?: string;
+          status?: string;
+          documentsLimit?: number;
+          documentsUsed?: number;
+          amountPaid?: number;
+          phoneNumber?: string;
+          purchasedAt?: string | null;
+          expiresAt?: string | null;
+          renewedFromId?: string | null;
+          merchantRequestId?: string | null;
+          checkoutRequestId?: string | null;
+          mpesaReceiptNumber?: string | null;
+          createdAt?: string;
+          updatedAt?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "Subscription_userId_fkey";
+            columns: ["userId"];
+            isOneToOne: false;
+            referencedRelation: "User";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "Subscription_renewedFromId_fkey";
+            columns: ["renewedFromId"];
+            isOneToOne: false;
+            referencedRelation: "Subscription";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1911,6 +1983,17 @@ export interface Database {
           p_user_id: string | null;
           p_phone_number: string;
           p_amount: number;
+        };
+        Returns: Json;
+      };
+      use_subscription_document: {
+        Args: { p_user_id: string };
+        Returns: Json;
+      };
+      activate_subscription: {
+        Args: {
+          p_checkout_request_id: string;
+          p_receipt: string;
         };
         Returns: Json;
       };

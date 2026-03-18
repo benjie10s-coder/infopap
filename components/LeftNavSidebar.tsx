@@ -25,6 +25,12 @@ const HomeIcon = () => (
   </svg>
 );
 
+const CreditCardIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+  </svg>
+);
+
 const MenuIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -59,6 +65,13 @@ const NAV_ITEMS = [
     sublabel: "",
     icon: HomeIcon,
     iconBg: "bg-mist text-ink/50",
+  },
+  {
+    href: "/dashboard/subscription",
+    label: "My Plan",
+    sublabel: "Subscription & billing",
+    icon: CreditCardIcon,
+    iconBg: "bg-lagoon/10 text-lagoon",
   },
 ];
 
@@ -196,7 +209,15 @@ export function ExpandedSidebarOverlay() {
         {/* Footer */}
         <div className="px-5 py-4 border-t border-mist">
           <p className="text-[11px] text-ink/30 leading-relaxed">
-            Documents are charged a flat rate of KSh 10 on first download via M-Pesa.
+            Pay KSh 10 per download, or{" "}
+            <Link
+              href="/dashboard/subscription"
+              onClick={close}
+              className="text-lagoon hover:underline"
+            >
+              subscribe to a plan
+            </Link>{" "}
+            to save up to 57%.
           </p>
         </div>
       </nav>

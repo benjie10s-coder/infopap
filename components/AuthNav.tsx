@@ -13,6 +13,12 @@ export function AuthNav() {
         <span className="text-lagoon">Invopap</span>
       </Link>
       <div className="flex items-center gap-4 text-sm">
+        <Link
+          href="/pricing"
+          className="text-ink/60 hover:text-ink transition-colors"
+        >
+          Pricing
+        </Link>
         {pathname !== "/auth/login" && (
           <Link
             href="/auth/login"

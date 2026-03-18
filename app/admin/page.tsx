@@ -1,229 +1,287 @@
-// app/admin/page.tsx — Admin dashboard page
+// app/admin/page.tsx — Enhanced admin dashboard overview with KPIs + charts
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useAdminAuth } from "@/lib/hooks/useAdminAuth";
+import { StatCard } from "@/components/admin/StatCard";
 import { formatCurrency } from "@/lib/utils/format";
+import dynamic from "next/dynamic";
+
+// Lazy-load chart components to keep initial bundle small
+const OverviewCharts = dynamic(() => import("./OverviewCharts"), { ssr: false });
 
 interface PlatformStats {
   totalInvoices: number;
   paidInvoices: number;
+  unpaidInvoices: number;
   totalRevenue: number;
   failedPayments: number;
+  cancelledPayments: number;
   activeUsers: number;
+  guestInvoices: number;
   invoicesToday: number;
   paymentsToday: number;
+  revenueToday: number;
+  invoicesThisMonth: number;
+  paymentsThisMonth: number;
 }
 
-export default function AdminPage() {
-  const [secret, setSecret] = useState("");
-  const [authenticated, setAuthenticated] = useState(false);
-  const [stats, setStats] = useState<PlatformStats | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+type RefreshInterval = 15 | 30 | 60 | 0;
 
-  const fetchStats = async (adminSecret: string) => {
-    setLoading(true);
-    setError("");
+export default function AdminDashboardPage() {
+  const { adminFetch } = useAdminAuth();
+  const [stats, setStats] = useState<PlatformStats | null>(null);
+  const [analytics, setAnalytics] = useState<Record<string, unknown> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshInterval, setRefreshInterval] = useState<RefreshInterval>(30);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+
+  const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/stats", {
-        headers: { Authorization: `Bearer ${adminSecret}` },
-      });
-      if (!res.ok) {
-        if (res.status === 401) {
-          setError("Invalid admin secret");
-          setAuthenticated(false);
-          return;
-        }
-        throw new Error("Failed to fetch stats");
+      const [statsRes, analyticsRes] = await Promise.all([
+        adminFetch("/api/admin/stats"),
+        adminFetch("/api/admin/analytics"),
+      ]);
+      if (statsRes.ok) {
+        const data = await statsRes.json();
+        setStats(data);
+        setLastRefreshed(new Date());
       }
-      const data = await res.json();
-      setStats(data);
-      setAuthenticated(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch");
+      if (analyticsRes.ok) {
+        const data = await analyticsRes.json();
+        setAnalytics(data);
+      }
+    } catch {
+      // Silently fail on refresh — stats remain from last successful fetch
     } finally {
       setLoading(false);
     }
+  }, [adminFetch]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  // Auto-refresh
+  useEffect(() => {
+    if (!refreshInterval) return;
+    const interval = setInterval(fetchStats, refreshInterval * 1000);
+    return () => clearInterval(interval);
+  }, [refreshInterval, fetchStats]);
+
+  // Reconcile payments action
+  const [reconciling, setReconciling] = useState(false);
+  const [reconcileResult, setReconcileResult] = useState<string | null>(null);
+
+  const handleReconcile = async () => {
+    setReconciling(true);
+    setReconcileResult(null);
+    try {
+      const res = await adminFetch("/api/admin/reconcile-payments", {
+        method: "POST",
+        headers: { "x-admin-secret": "bearer" },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setReconcileResult(`Reconciled ${data.summary?.reconciled || 0} of ${data.summary?.total || 0} payments`);
+        fetchStats();
+      } else {
+        setReconcileResult(`Error: ${data.error || "Failed"}`);
+      }
+    } catch {
+      setReconcileResult("Network error");
+    } finally {
+      setReconciling(false);
+    }
   };
 
-  // Auto-refresh every 30s when authenticated
-  useEffect(() => {
-    if (!authenticated || !secret) return;
-    const interval = setInterval(() => fetchStats(secret), 30_000);
-    return () => clearInterval(interval);
-  }, [authenticated, secret]);
-
-  if (!authenticated) {
+  if (loading && !stats) {
     return (
-      <div className="min-h-screen bg-ink flex items-center justify-center px-4">
-        <div className="w-full max-w-sm space-y-6">
-          <div className="text-center">
-            <h1 className="text-2xl font-display font-bold text-white">
-              Admin Dashboard
-            </h1>
-            <p className="text-sm text-white/40 mt-1">
-              Enter your admin secret to continue
-            </p>
-          </div>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              fetchStats(secret);
-            }}
-            className="space-y-4"
-          >
-            <input
-              type="password"
-              value={secret}
-              onChange={(e) => setSecret(e.target.value)}
-              placeholder="Admin Secret"
-              className="w-full rounded-lg bg-white/10 border border-white/10 px-4 py-3 text-white placeholder:text-white/30 focus:border-lagoon focus:outline-none focus:ring-1 focus:ring-lagoon/30"
-              autoFocus
-            />
-
-            {error && (
-              <p className="text-sm text-red-400 bg-red-900/20 rounded-lg px-3 py-2">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading || !secret}
-              className="w-full rounded-lg bg-lagoon px-4 py-3 text-white font-medium hover:bg-lagoon/90 transition-colors disabled:opacity-50"
-            >
-              {loading ? "Loading..." : "Access Dashboard"}
-            </button>
-          </form>
-        </div>
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="h-8 w-8 rounded-full border-2 border-lagoon/30 border-t-lagoon animate-spin" />
       </div>
     );
   }
 
   if (!stats) return null;
 
+  const conversionRate = stats.totalInvoices > 0
+    ? ((stats.paidInvoices / stats.totalInvoices) * 100).toFixed(1)
+    : "0";
+
   return (
-    <div className="min-h-screen bg-ink text-white">
-      <header className="border-b border-white/10">
-        <div className="max-w-5xl mx-auto flex items-center justify-between px-6 py-4">
-          <h1 className="text-xl font-display font-bold text-lagoon">
-            Invopap Admin
+    <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      {/* Top bar with refresh controls */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-white">
+            Platform Overview
           </h1>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => fetchStats(secret)}
-              disabled={loading}
-              className="rounded-lg border border-white/10 px-3 py-1.5 text-sm text-white/60 hover:text-white hover:border-white/20 transition-colors"
-            >
-              {loading ? "Refreshing..." : "Refresh"}
-            </button>
-            <button
-              onClick={() => {
-                setAuthenticated(false);
-                setSecret("");
-                setStats(null);
-              }}
-              className="text-sm text-white/40 hover:text-white/60 transition-colors"
-            >
-              Sign Out
-            </button>
+          {lastRefreshed && (
+            <p className="text-xs text-white/20 mt-1">
+              Last updated: {lastRefreshed.toLocaleTimeString()}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3">
+          {/* Auto-refresh selector */}
+          <div className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2 py-1">
+            <span className="text-[10px] text-white/30 uppercase tracking-wider">Auto</span>
+            {([15, 30, 60, 0] as RefreshInterval[]).map((val) => (
+              <button
+                key={val}
+                onClick={() => setRefreshInterval(val)}
+                className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                  refreshInterval === val
+                    ? "bg-lagoon/20 text-lagoon"
+                    : "text-white/30 hover:text-white/60"
+                }`}
+              >
+                {val === 0 ? "Off" : `${val}s`}
+              </button>
+            ))}
           </div>
-        </div>
-      </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
-        {/* Today's highlights */}
-        <div className="rounded-xl bg-lagoon/10 border border-lagoon/20 p-6">
-          <h2 className="text-sm font-semibold text-lagoon uppercase tracking-wider mb-4">
-            Today
-          </h2>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <p className="text-3xl font-bold text-white">
-                {stats.invoicesToday}
-              </p>
-              <p className="text-sm text-white/40">Documents created</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-white">
-                {stats.paymentsToday}
-              </p>
-              <p className="text-sm text-white/40">Downloads paid</p>
-            </div>
+          <button
+            onClick={fetchStats}
+            className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/50 hover:text-white hover:border-white/20 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* Today's highlights */}
+      <div className="rounded-xl bg-lagoon/10 border border-lagoon/20 p-6">
+        <h2 className="text-sm font-semibold text-lagoon uppercase tracking-wider mb-4">
+          Today
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+          <div>
+            <p className="text-3xl font-bold text-white">{stats.invoicesToday}</p>
+            <p className="text-sm text-white/40">Documents created</p>
           </div>
-        </div>
-
-        {/* All-time stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <StatCard label="Total Documents" value={String(stats.totalInvoices)} />
-          <StatCard label="Paid Downloads" value={String(stats.paidInvoices)} />
-          <StatCard
-            label="Total Revenue"
-            value={formatCurrency(stats.totalRevenue, "KES")}
-            accent="text-green-400"
-          />
-          <StatCard
-            label="Failed Payments"
-            value={String(stats.failedPayments)}
-            accent={stats.failedPayments > 0 ? "text-red-400" : undefined}
-          />
-          <StatCard label="Active Users" value={String(stats.activeUsers)} />
-          <StatCard
-            label="Conversion Rate"
-            value={
-              stats.totalInvoices > 0
-                ? `${((stats.paidInvoices / stats.totalInvoices) * 100).toFixed(1)}%`
-                : "0%"
-            }
-          />
-        </div>
-
-        {/* Revenue breakdown */}
-        <div className="rounded-xl bg-white/5 border border-white/10 p-6">
-          <h2 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-4">
-            Revenue Breakdown
-          </h2>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-white/60">Gross (paid downloads × KSh 10)</span>
-              <span className="text-white font-medium">
-                {formatCurrency(stats.totalRevenue, "KES")}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-white/60">
-                Potential (unpaid × KSh 10)
-              </span>
-              <span className="text-white/40">
-                {formatCurrency(
-                  (stats.totalInvoices - stats.paidInvoices) * 10,
-                  "KES"
-                )}
-              </span>
-            </div>
+          <div>
+            <p className="text-3xl font-bold text-white">{stats.paymentsToday}</p>
+            <p className="text-sm text-white/40">Downloads paid</p>
+          </div>
+          <div>
+            <p className="text-3xl font-bold text-green-400">
+              {formatCurrency(stats.revenueToday, "KES")}
+            </p>
+            <p className="text-sm text-white/40">Revenue today</p>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
 
-function StatCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: string;
-}) {
-  return (
-    <div className="rounded-xl bg-white/5 border border-white/10 p-5">
-      <p className="text-xs text-white/30 uppercase tracking-wider">{label}</p>
-      <p className={`text-2xl font-bold mt-1 ${accent || "text-white"}`}>
-        {value}
-      </p>
+      {/* This month highlights */}
+      <div className="rounded-xl bg-white/5 border border-white/10 p-6">
+        <h2 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-4">
+          This Month
+        </h2>
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <p className="text-2xl font-bold text-white">{stats.invoicesThisMonth}</p>
+            <p className="text-sm text-white/40">Documents created</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-white">{stats.paymentsThisMonth}</p>
+            <p className="text-sm text-white/40">Payments completed</p>
+          </div>
+        </div>
+      </div>
+
+      {/* All-time stat cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <StatCard label="Total Documents" value={String(stats.totalInvoices)} />
+        <StatCard label="Paid Downloads" value={String(stats.paidInvoices)} />
+        <StatCard label="Unpaid Documents" value={String(stats.unpaidInvoices)} />
+        <StatCard
+          label="Total Revenue"
+          value={formatCurrency(stats.totalRevenue, "KES")}
+          accent="text-green-400"
+        />
+        <StatCard
+          label="Failed Payments"
+          value={String(stats.failedPayments)}
+          accent={stats.failedPayments > 0 ? "text-red-400" : undefined}
+        />
+        <StatCard
+          label="Cancelled Payments"
+          value={String(stats.cancelledPayments)}
+          accent={stats.cancelledPayments > 0 ? "text-yellow-400" : undefined}
+        />
+        <StatCard label="Active Users" value={String(stats.activeUsers)} />
+        <StatCard
+          label="Guest Documents"
+          value={String(stats.guestInvoices)}
+          sublabel={`${stats.totalInvoices > 0 ? ((stats.guestInvoices / stats.totalInvoices) * 100).toFixed(0) : 0}% of total`}
+        />
+        <StatCard
+          label="Conversion Rate"
+          value={`${conversionRate}%`}
+          accent={Number(conversionRate) > 50 ? "text-green-400" : Number(conversionRate) > 20 ? "text-yellow-400" : "text-red-400"}
+        />
+      </div>
+
+      {/* Revenue breakdown */}
+      <div className="rounded-xl bg-white/5 border border-white/10 p-6">
+        <h2 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-4">
+          Revenue Breakdown
+        </h2>
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-white/60">Gross revenue (all-time)</span>
+            <span className="text-white font-medium">
+              {formatCurrency(stats.totalRevenue, "KES")}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-white/60">Today&apos;s revenue</span>
+            <span className="text-green-400 font-medium">
+              {formatCurrency(stats.revenueToday, "KES")}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-white/60">Potential (unpaid documents × KSh 10)</span>
+            <span className="text-white/40">
+              {formatCurrency(stats.unpaidInvoices * 10, "KES")}
+            </span>
+          </div>
+          <div className="flex justify-between pt-3 border-t border-white/5">
+            <span className="text-white/60">Lost to failures</span>
+            <span className="text-red-400 font-medium">
+              {formatCurrency(stats.failedPayments * 10, "KES")}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts */}
+      <OverviewCharts analytics={analytics} />
+
+      {/* Quick actions */}
+      <div className="rounded-xl bg-white/5 border border-white/10 p-6">
+        <h2 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-4">
+          Quick Actions
+        </h2>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleReconcile}
+            disabled={reconciling}
+            className="rounded-lg bg-lagoon/15 border border-lagoon/20 px-4 py-2.5 text-sm text-lagoon font-medium hover:bg-lagoon/25 transition-colors disabled:opacity-50"
+          >
+            {reconciling ? "Reconciling..." : "Reconcile Payments"}
+          </button>
+        </div>
+        {reconcileResult && (
+          <p className={`mt-3 text-sm ${reconcileResult.startsWith("Error") ? "text-red-400" : "text-green-400"}`}>
+            {reconcileResult}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

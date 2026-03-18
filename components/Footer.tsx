@@ -1,6 +1,7 @@
 // components/Footer.tsx — Sitewide footer with WhatsApp, branding, and social links
 "use client";
 
+import Link from "next/link";
 import { useAuth } from "@/lib/hooks/useAuth";
 
 const LinkedInIcon = () => (
@@ -29,7 +30,7 @@ export function Footer() {
     <footer className={`w-full border-t border-mist bg-white ${user ? "pl-14" : ""}`}>
       <div className="mx-auto flex items-center justify-between px-6 py-4 gap-4">
         {/* Left — WhatsApp support */}
-        <div className="flex items-center shrink-0">
+        <div className="flex items-center shrink-0 gap-4">
           <a
             href="https://wa.me/254112674945"
             target="_blank"
@@ -41,6 +42,12 @@ export function Footer() {
             <WhatsAppIcon />
             <span className="hidden sm:inline">Support</span>
           </a>
+          <Link
+            href="/pricing"
+            className="text-ink/40 hover:text-ink/60 transition-colors text-sm"
+          >
+            Pricing
+          </Link>
         </div>
 
         {/* Centre — Branding */}
