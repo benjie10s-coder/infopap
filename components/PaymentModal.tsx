@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 
 type ModalState = "input" | "processing" | "success" | "error";
 
@@ -271,22 +270,6 @@ export function PaymentModal({ publicId, onClose, onSuccess, documentType = "INV
             </div>
           </form>
 
-          {/* Upsell banner */}
-          <div className="mt-4 rounded-lg bg-lagoon/5 border border-lagoon/10 px-4 py-3">
-            <Link
-              href="/pricing"
-              className="flex items-center justify-between text-sm group"
-              onClick={onClose}
-            >
-              <span className="text-ink/60">
-                <span className="font-medium text-lagoon">Save with a plan</span>
-                {" — from KSh 5/doc"}
-              </span>
-              <svg className="h-4 w-4 text-lagoon group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
         </>)}
 
         {/* Processing state */}
